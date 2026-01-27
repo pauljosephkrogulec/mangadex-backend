@@ -11,7 +11,7 @@ use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
@@ -318,9 +318,8 @@ class Chapter
     public function removeReport(Report $report): self
     {
         if ($this->reports->removeElement($report)) {
-            if ($report->getObjectId() === $this->id) {
-                $report->setObjectId(null);
-            }
+            // Don't set objectId to null as it's a required field in Report entity
+            // The report should be handled differently if needed
         }
         return $this;
     }

@@ -17,7 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ORM\Table(name: 'manga')]
 #[ApiResource(
-    normalizationContext: ['groups' => ['manga:read']],
+    normalizationContext: ['groups' => ['manga:read', 'cover_art:read']],
     denormalizationContext: ['groups' => ['manga:write']],
     paginationItemsPerPage: 10
 )]
@@ -155,6 +155,7 @@ class Manga
     private Collection $chapters;
 
     #[ORM\OneToMany(mappedBy: 'manga', targetEntity: CoverArt::class, cascade: ['remove'])]
+    #[Groups(['manga:read'])]
     private Collection $coverArts;
 
     #[ORM\OneToMany(mappedBy: 'manga', targetEntity: MangaRelation::class, cascade: ['remove'])]

@@ -47,28 +47,24 @@ class AuthController extends AbstractController
 
         // Generate JWT token
         $token = $this->jwtManager->create($user);
-
         return new JsonResponse([
-            'token' => $token
+            'token' => $token,
+            'user' => [
+                'id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'name' => $user->getUsername(),
+                'roles' => $user->getRoles(),
+            ]
         ]);
     }
 
-    #[Route('/me', name: 'auth_me', methods: ['GET'])]
-    public function me(): JsonResponse
+    #[Route('/logout', name: 'auth_logout', methods: ['POST'])]
+    public function logout(): JsonResponse
     {
-        $user = $this->getUser();
-
-        if (!$user) {
-            return new JsonResponse(['error' => 'Not authenticated'], 401);
-        }
-
-        return new JsonResponse([
-            'user' => [
-                'id' => $user->getId(),
-                'username' => $user->getUsername(),
-                'email' => $user->getEmail(),
-                'roles' => $user->getRoles()
-            ]
-        ]);
+        // For JWT tokens, logout is typically handled client-side
+        // but we can add server-side logic here if needed
+        // such as blacklisting tokens or logging the logout event
+        
+        return new JsonResponse(['message' => 'Logged out successfully']);
     }
 }

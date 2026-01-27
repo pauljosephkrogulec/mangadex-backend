@@ -1,7 +1,19 @@
 api_platform:
-    title: Hello API Platform
+    title: MangaDex API
     version: 1.0.0
+    description: API for managing manga, authors, artists, and chapters
     defaults:
         stateless: true
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
+    # Enable documentation
+    enable_docs: true
+    enable_swagger_ui: true
+    swagger:
+        versions: [3]
+    # Enable entrypoint for API documentation
+    show_webby: false
+    # Eager loading configuration
+    eager_loading:
+        enabled: false
+        fetch_partial: true
