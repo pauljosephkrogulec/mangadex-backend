@@ -3,19 +3,46 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Attributes\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'manga_relation')]
 #[ApiResource(
-    normalizationContext: ['groups' => ['manga_relation:read']],
-    denormalizationContext: ['groups' => ['manga_relation:write']],
-    paginationItemsPerPage: 10
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['manga_relation:read:collection']],
+            paginationItemsPerPage: 10
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['manga_relation:read:item']]
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['manga_relation:write:create']],
+            normalizationContext: ['groups' => ['manga_relation:read:item']]
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['manga_relation:write:update']],
+            normalizationContext: ['groups' => ['manga_relation:read:item']]
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['manga_relation:write:patch']],
+            normalizationContext: ['groups' => ['manga_relation:read:item']]
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN')"
+        )
+    ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'manga.id' => 'exact',
@@ -29,11 +56,11 @@ class MangaRelation
     #[ORM\Column(type: 'guid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator')]
-    #[Groups(['manga_relation:read'])]
+    #[Groups(['manga_relation:read:collection', 'manga_relation:read:item'])]
     private ?string $id = null;
 
     #[ORM\Column(type: 'string', length: 50)]
-    #[Groups(['manga_relation:read', 'manga_relation:write'])]
+    #[Groups(['manga_relation:read:collection', 'manga_relation:read:item', 'manga_relation:write:create', 'manga_relation:write:update', 'manga_relation:write:patch'])]
     #[Assert\NotBlank]
     #[Assert\Choice(choices: [
         'monochrome', 'main_story', 'adapted_from', 'based_on', 'prequel',
@@ -44,21 +71,21 @@ class MangaRelation
     private string $relation;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['manga_relation:read'])]
+    #[Groups(['manga_relation:read:collection', 'manga_relation:read:item'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['manga_relation:read'])]
+    #[Groups(['manga_relation:read:collection', 'manga_relation:read:item'])]
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\ManyToOne(targetEntity: Manga::class, inversedBy: 'relations')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['manga_relation:read', 'manga_relation:write'])]
+    #[Groups(['manga_relation:read:collection', 'manga_relation:read:item', 'manga_relation:write:create', 'manga_relation:write:update', 'manga_relation:write:patch'])]
     private Manga $manga;
 
     #[ORM\ManyToOne(targetEntity: Manga::class, inversedBy: 'relatedManga')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['manga_relation:read', 'manga_relation:write'])]
+    #[Groups(['manga_relation:read:collection', 'manga_relation:read:item', 'manga_relation:write:create', 'manga_relation:write:update', 'manga_relation:write:patch'])]
     private Manga $targetManga;
 
     #[ORM\ManyToOne(targetEntity: Manga::class, inversedBy: 'relatedManga')]

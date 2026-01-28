@@ -58,6 +58,42 @@ class AuthController extends AbstractController
         ]);
     }
 
+    #[Route('/refresh', name: 'auth_refresh', methods: ['POST'])]
+    public function refresh(Request $request): JsonResponse
+    {
+        try {
+            // Try to get user from the current token first
+            $user = $this->getUser();
+            
+            if (!$user) {
+                // If no user from token, check if we can get user from request data
+                // This would require storing refresh tokens separately in a real implementation
+                return new JsonResponse([
+                    'error' => 'Token expired and no refresh mechanism available',
+                    'requiresReauth' => true
+                ], 401);
+            }
+
+            // Generate new JWT token
+            $newToken = $this->jwtManager->create($user);
+            
+            return new JsonResponse([
+                'token' => $newToken,
+                'user' => [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                    'name' => $user->getUsername(),
+                    'roles' => $user->getRoles(),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Token refresh failed',
+                'requiresReauth' => true
+            ], 401);
+        }
+    }
+
     #[Route('/logout', name: 'auth_logout', methods: ['POST'])]
     public function logout(): JsonResponse
     {

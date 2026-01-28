@@ -3,6 +3,12 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
@@ -15,9 +21,30 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ORM\Table(name: 'cover_art')]
 #[ApiResource(
-    normalizationContext: ['groups' => ['cover_art:read']],
-    denormalizationContext: ['groups' => ['cover_art:write']],
-    paginationItemsPerPage: 10
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['cover_art:read:collection']],
+            paginationItemsPerPage: 10
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['cover_art:read:item']]
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['cover_art:write:create']],
+            normalizationContext: ['groups' => ['cover_art:read:item']]
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['cover_art:write:update']],
+            normalizationContext: ['groups' => ['cover_art:read:item']]
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['cover_art:write:patch']],
+            normalizationContext: ['groups' => ['cover_art:read:item']]
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN') or object.getUploader() == user"
+        )
+    ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'manga.id' => 'exact',
@@ -31,49 +58,49 @@ class CoverArt
     #[ORM\Column(type: 'guid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator')]
-    #[Groups(['cover_art:read'])]
+    #[Groups(['cover_art:read:collection', 'cover_art:read:item'])]
     private ?string $id = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['cover_art:read', 'cover_art:write'])]
+    #[Groups(['cover_art:read:collection', 'cover_art:read:item', 'cover_art:write:create', 'cover_art:write:update', 'cover_art:write:patch'])]
     private ?string $volume = null;
 
     #[ORM\Column(type: 'string', length: 512)]
-    #[Groups(['cover_art:read', 'cover_art:write'])]
+    #[Groups(['cover_art:read:collection', 'cover_art:read:item', 'cover_art:write:create', 'cover_art:write:update', 'cover_art:write:patch'])]
     #[Assert\NotBlank]
     #[Assert\Url]
     private string $fileName;
 
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
-    #[Groups(['cover_art:read', 'cover_art:write'])]
+    #[Groups(['cover_art:read:collection', 'cover_art:read:item', 'cover_art:write:create', 'cover_art:write:update', 'cover_art:write:patch'])]
     private ?string $locale = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['cover_art:read', 'cover_art:write'])]
+    #[Groups(['cover_art:read:collection', 'cover_art:read:item', 'cover_art:write:create', 'cover_art:write:update', 'cover_art:write:patch'])]
     private ?string $description = null;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(['cover_art:read', 'cover_art:write'])]
+    #[Groups(['cover_art:read:collection', 'cover_art:read:item', 'cover_art:write:create', 'cover_art:write:update', 'cover_art:write:patch'])]
     #[Assert\NotNull]
     #[Assert\Positive]
     private int $version = 1;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['cover_art:read'])]
+    #[Groups(['cover_art:read:collection', 'cover_art:read:item'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['cover_art:read'])]
+    #[Groups(['cover_art:read:collection', 'cover_art:read:item'])]
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\ManyToOne(targetEntity: Manga::class, inversedBy: 'coverArts')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['cover_art:read', 'cover_art:write'])]
+    #[Groups(['cover_art:read:collection', 'cover_art:read:item', 'cover_art:write:create', 'cover_art:write:update', 'cover_art:write:patch'])]
     private Manga $manga;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['cover_art:read', 'cover_art:write'])]
+    #[Groups(['cover_art:read:collection', 'cover_art:read:item', 'cover_art:write:create', 'cover_art:write:update', 'cover_art:write:patch'])]
     private User $uploader;
 
     #[ORM\OneToMany(mappedBy: 'coverArt', targetEntity: Report::class, cascade: ['remove'])]

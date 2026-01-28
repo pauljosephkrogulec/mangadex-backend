@@ -109,20 +109,40 @@ class RealMangaDexFixtures extends Fixture
             foreach($artistEntities as $artist) {
                 $mangaEntity->addArtist($artist);
             }
-            
+
             // Add tags
-            $tagEntities = $this->getTagEntities($manager, $manga);
+            $tagEntities = $this->getTags($manager, $manga['attributes']['tags']);
             foreach($tagEntities as $tag) {
-                if (!$manager->contains($tag)) {
-                    $manager->persist($tag);
+                if ($tag) {
+                    $mangaEntity->addTag($tag);
                 }
-                $mangaEntity->addTag($tag);
             }
             
             $manager->persist($mangaEntity);
             $mangaEntities[$manga['id']] = $mangaEntity;
         }
         return $mangaEntities;
+    }
+
+    public function getTags($manager, $tagsData): array
+    {
+        $tags = [];
+        foreach($tagsData as $tagData) {
+            $conn = $manager->getConnection();
+            $sql = "
+                SELECT id
+                FROM tag
+                WHERE json_extract(name, '$.en') = :name
+                LIMIT 1
+            ";
+
+            $id = $conn->fetchOne($sql, [
+                'name' => $tagData['attributes']['name']['en'],
+            ]);
+
+            $tags[] = $id ? $manager->find(Tag::class, $id) : null;
+        }
+        return $tags;
     }
 
     private function createChapters($manager, $mangas, $users, $mangaEntities): array
@@ -165,37 +185,6 @@ class RealMangaDexFixtures extends Fixture
         return $chapterEntities;
     }
 
-    private function getTagEntities($manager, $manga): array
-    {
-        $tagEntities = [];
-        $tagRepository = $manager->getRepository(Tag::class);
-        
-        if (isset($manga['attributes']['tags'])) {
-            foreach($manga['attributes']['tags'] as $tagData) {
-                if ($tagData['type'] === 'tag') {
-                    // Check if tag already exists in database
-                    $existingTag = $tagRepository->findOneBy(['name' => $tagData['attributes']['name']]);
-                    
-                    if ($existingTag) {
-                        // Use existing tag
-                        $tagEntities[] = $existingTag;
-                    } else {
-                        // Create new tag
-                        $tag = new Tag();
-                        $tag->setName($tagData['attributes']['name']);
-                        $tag->setDescription($tagData['attributes']['description']);
-                        $tag->setTagGroup($tagData['attributes']['group']);
-                        $tag->setVersion($tagData['attributes']['version']);
-                        $tag->setCreatedAt(new \DateTimeImmutable());
-                        $tag->setUpdatedAt(new \DateTimeImmutable());
-                        $tagEntities[] = $tag;
-                    }
-                }
-            }
-        }
-        return $tagEntities;
-    }
-
     private function createTags($manager, $mangas): array 
     {
         $tagEntities = [];
@@ -207,10 +196,17 @@ class RealMangaDexFixtures extends Fixture
                 foreach($manga['attributes']['tags'] as $tagData) {
                     if ($tagData['type'] === 'tag' && !isset($processedTags[$tagData['id']])) {
                         // Check if tag already exists in database
-                        $existingTag = $tagRepository->findOneBy(['name' => $tagData['attributes']['name']]);
+                        // Since name is stored as JSON, we need to find by comparing the array structure
+                        $existingTags = $tagRepository->findAll();
+                        $existingTag = null;
                         
+                        foreach ($existingTags as $tag) {
+                            if ($tag->getName() == $tagData['attributes']['name']) {
+                                $existingTag = $tag;
+                                break;
+                            }
+                        }
                         if ($existingTag) {
-                            // Use existing tag
                             $tagEntities[] = $existingTag;
                             $processedTags[$tagData['id']] = $existingTag;
                         } else {
@@ -231,6 +227,7 @@ class RealMangaDexFixtures extends Fixture
                 }
             }
         }
+        $manager->flush();
         
         return $tagEntities;
     }

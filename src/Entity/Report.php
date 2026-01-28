@@ -3,6 +3,12 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
@@ -13,9 +19,30 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ORM\Table(name: 'report')]
 #[ApiResource(
-    normalizationContext: ['groups' => ['report:read']],
-    denormalizationContext: ['groups' => ['report:write']],
-    paginationItemsPerPage: 10
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['report:read:collection']],
+            paginationItemsPerPage: 10
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['report:read:item']]
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['report:write:create']],
+            normalizationContext: ['groups' => ['report:read:item']]
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['report:write:update']],
+            normalizationContext: ['groups' => ['report:read:item']]
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['report:write:patch']],
+            normalizationContext: ['groups' => ['report:read:item']]
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN') or object.getCreator() == user"
+        )
+    ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'objectId' => 'exact',
@@ -29,32 +56,32 @@ class Report
     #[ORM\Column(type: 'guid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator')]
-    #[Groups(['report:read'])]
+    #[Groups(['report:read:collection', 'report:read:item'])]
     private ?string $id = null;
 
     #[ORM\Column(type: 'text')]
-    #[Groups(['report:read', 'report:write'])]
+    #[Groups(['report:read:collection', 'report:read:item', 'report:write:create', 'report:write:update', 'report:write:patch'])]
     #[Assert\NotBlank]
     private string $details;
 
     #[ORM\Column(type: 'guid')]
-    #[Groups(['report:read', 'report:write'])]
+    #[Groups(['report:read:collection', 'report:read:item', 'report:write:create', 'report:write:update', 'report:write:patch'])]
     #[Assert\NotBlank]
     private string $objectId;
 
     #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['report:read', 'report:write'])]
+    #[Groups(['report:read:collection', 'report:read:item', 'report:write:create', 'report:write:update', 'report:write:patch'])]
     #[Assert\NotNull]
     #[Assert\Choice(choices: ['waiting', 'accepted', 'refused', 'autoresolved'])]
     private string $status = 'waiting';
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['report:read'])]
+    #[Groups(['report:read:collection', 'report:read:item'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['report:read', 'report:write'])]
+    #[Groups(['report:read:collection', 'report:read:item', 'report:write:create', 'report:write:update', 'report:write:patch'])]
     private User $creator;
 
     #[ORM\ManyToOne(targetEntity: Chapter::class, inversedBy: 'reports')]

@@ -3,21 +3,48 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Attributes\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'custom_list')]
 #[ApiResource(
-    normalizationContext: ['groups' => ['custom_list:read']],
-    denormalizationContext: ['groups' => ['custom_list:write']],
-    paginationItemsPerPage: 10
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['custom_list:read:collection']],
+            paginationItemsPerPage: 10
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['custom_list:read:item']]
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['custom_list:write:create']],
+            normalizationContext: ['groups' => ['custom_list:read:item']]
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['custom_list:write:update']],
+            normalizationContext: ['groups' => ['custom_list:read:item']]
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['custom_list:write:patch']],
+            normalizationContext: ['groups' => ['custom_list:read:item']]
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN') or object.getOwner() == user"
+        )
+    ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'name' => 'partial',
@@ -31,42 +58,42 @@ class CustomList
     #[ORM\Column(type: 'guid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator')]
-    #[Groups(['custom_list:read'])]
+    #[Groups(['custom_list:read:collection', 'custom_list:read:item'])]
     private ?string $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['custom_list:read', 'custom_list:write'])]
+    #[Groups(['custom_list:read:collection', 'custom_list:read:item', 'custom_list:write:create', 'custom_list:write:update', 'custom_list:write:patch'])]
     #[Assert\NotBlank]
     private string $name;
 
     #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['custom_list:read', 'custom_list:write'])]
+    #[Groups(['custom_list:read:collection', 'custom_list:read:item', 'custom_list:write:create', 'custom_list:write:update', 'custom_list:write:patch'])]
     #[Assert\NotNull]
     #[Assert\Choice(choices: ['public', 'private'])]
     private string $visibility = 'private';
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(['custom_list:read', 'custom_list:write'])]
+    #[Groups(['custom_list:read:collection', 'custom_list:read:item', 'custom_list:write:create', 'custom_list:write:update', 'custom_list:write:patch'])]
     #[Assert\NotNull]
     #[Assert\Positive]
     private int $version = 1;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['custom_list:read'])]
+    #[Groups(['custom_list:read:collection', 'custom_list:read:item'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['custom_list:read'])]
+    #[Groups(['custom_list:read:collection', 'custom_list:read:item'])]
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['custom_list:read', 'custom_list:write'])]
+    #[Groups(['custom_list:read:collection', 'custom_list:read:item', 'custom_list:write:create', 'custom_list:write:update', 'custom_list:write:patch'])]
     private User $owner;
 
     #[ORM\ManyToMany(targetEntity: Manga::class, inversedBy: 'customLists')]
     #[ORM\JoinTable(name: 'custom_list_manga')]
-    #[Groups(['custom_list:read', 'custom_list:write'])]
+    #[Groups(['custom_list:read:collection', 'custom_list:read:item', 'custom_list:write:create', 'custom_list:write:update', 'custom_list:write:patch'])]
     private Collection $manga;
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'followedLists')]

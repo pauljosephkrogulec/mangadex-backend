@@ -3,21 +3,48 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Attributes\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'author')]
 #[ApiResource(
-    normalizationContext: ['groups' => ['author:read']],
-    denormalizationContext: ['groups' => ['author:write']],
-    paginationItemsPerPage: 10
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['author:read:collection']],
+            paginationItemsPerPage: 10
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['author:read:item']]
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['author:write:create']],
+            normalizationContext: ['groups' => ['author:read:item']]
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['author:write:update']],
+            normalizationContext: ['groups' => ['author:read:item']]
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['author:write:patch']],
+            normalizationContext: ['groups' => ['author:read:item']]
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN')"
+        )
+    ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'name' => 'partial',
@@ -31,86 +58,86 @@ class Author
     #[ORM\Column(type: 'guid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator')]
-    #[Groups(['author:read', 'manga:read'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'manga:read:collection', 'manga:read:item'])]
     private ?string $id = null;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     #[Assert\NotNull]
     private array $name = [];
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $imageUrl = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $biography = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $twitter = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $pixiv = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $melonBook = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $fanBox = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $booth = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $nicoVideo = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $skeb = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $fantia = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $tumblr = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $youtube = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $weibo = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $naver = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     private ?array $website = null;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(['author:read', 'author:write'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
     #[Assert\NotNull]
     #[Assert\Positive]
     private int $version = 1;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['author:read'])]
+    #[Groups(['author:read:collection', 'author:read:item'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['author:read'])]
+    #[Groups(['author:read:collection', 'author:read:item'])]
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\ManyToMany(targetEntity: Manga::class, mappedBy: 'authors')]

@@ -3,6 +3,12 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
@@ -17,9 +23,30 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ORM\Table(name: 'manga')]
 #[ApiResource(
-    normalizationContext: ['groups' => ['manga:read', 'cover_art:read']],
-    denormalizationContext: ['groups' => ['manga:write']],
-    paginationItemsPerPage: 10
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['manga:read:collection', 'cover_art:read']],
+            paginationItemsPerPage: 10
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['manga:read:item', 'cover_art:read']]
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['manga:write:create']],
+            normalizationContext: ['groups' => ['manga:read:item', 'cover_art:read']]
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['manga:write:update']],
+            normalizationContext: ['groups' => ['manga:read:item', 'cover_art:read']]
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['manga:write:patch']],
+            normalizationContext: ['groups' => ['manga:read:item', 'cover_art:read']]
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN')"
+        )
+    ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'title' => 'partial',
@@ -41,121 +68,121 @@ class Manga
     #[ORM\Column(type: 'guid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator')]
-    #[Groups(['manga:read', 'chapter:read', 'cover_art:read'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'chapter:read', 'cover_art:read'])]
     private ?string $id = null;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     #[Assert\NotNull]
     private array $title = [];
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     private array $altTitles = [];
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     private array $description = [];
 
     #[ORM\Column(type: 'boolean')]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     private bool $isLocked = false;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     private ?array $links = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     private ?array $officialLinks = null;
 
     #[ORM\Column(type: 'string', length: 10)]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     #[Assert\NotNull]
     #[Assert\Regex(pattern: '/^[a-z]{2}(-[a-z]{2})?$/')]
     private string $originalLanguage;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     private ?string $lastVolume = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     private ?string $lastChapter = null;
 
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     #[Assert\Choice(choices: ['shounen', 'shoujo', 'josei', 'seinen'])]
     private ?string $publicationDemographic = null;
 
     #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     #[Assert\NotNull]
     #[Assert\Choice(choices: ['completed', 'ongoing', 'cancelled', 'hiatus'])]
     private string $status;
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     #[Assert\Range(min: 1, max: 9999)]
     private ?int $year = null;
 
     #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     #[Assert\NotNull]
     #[Assert\Choice(choices: ['safe', 'suggestive', 'erotica', 'pornographic'])]
     private string $contentRating;
 
     #[ORM\Column(type: 'boolean')]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     private bool $chapterNumbersResetOnNewVolume = false;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['manga:read'])]
+    #[Groups(['manga:read:collection', 'manga:read:item'])]
     private array $availableTranslatedLanguages = [];
 
     #[ORM\Column(type: 'guid', nullable: true)]
-    #[Groups(['manga:read'])]
+    #[Groups(['manga:read:collection', 'manga:read:item'])]
     private ?string $latestUploadedChapter = null;
 
     #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     #[Assert\Choice(choices: ['draft', 'submitted', 'published', 'rejected'])]
     private string $state = 'draft';
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     #[Assert\NotNull]
     #[Assert\Positive]
     private int $version = 1;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['manga:read'])]
+    #[Groups(['manga:read:collection', 'manga:read:item'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['manga:read'])]
+    #[Groups(['manga:read:collection', 'manga:read:item'])]
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\ManyToMany(targetEntity: Author::class, inversedBy: 'mangaAsAuthor')]
     #[ORM\JoinTable(name: 'manga_authors')]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     private Collection $authors;
 
     #[ORM\ManyToMany(targetEntity: Author::class, inversedBy: 'mangaAsArtist')]
     #[ORM\JoinTable(name: 'manga_artists')]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     private Collection $artists;
 
     #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'manga')]
     #[ORM\JoinTable(name: 'manga_tags')]
-    #[Groups(['manga:read', 'manga:write'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
     private Collection $tags;
 
     #[ORM\OneToMany(mappedBy: 'manga', targetEntity: Chapter::class, cascade: ['remove'])]
     private Collection $chapters;
 
     #[ORM\OneToMany(mappedBy: 'manga', targetEntity: CoverArt::class, cascade: ['remove'])]
-    #[Groups(['manga:read'])]
+    #[Groups(['manga:read:collection', 'manga:read:item'])]
     private Collection $coverArts;
 
     #[ORM\OneToMany(mappedBy: 'manga', targetEntity: MangaRelation::class, cascade: ['remove'])]
@@ -633,6 +660,13 @@ class Manga
             $follower->removeFollowedManga($this);
         }
         return $this;
+    }
+
+    #[Groups(['manga:read:collection', 'manga:read:item'])]
+    public function getMainCoverArtFilename(): ?string
+    {
+        $mainCoverArt = $this->coverArts->first();
+        return $mainCoverArt ? $mainCoverArt->getFileName() : null;
     }
 
     #[ORM\PrePersist]

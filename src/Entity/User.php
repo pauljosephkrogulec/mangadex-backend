@@ -3,12 +3,13 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use App\State\UserPasswordHasherProcessor;
@@ -24,15 +25,29 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'users')]
 #[ApiResource(
     operations: [
-        new Get(),
-        new GetCollection(),
-        new Post(),
-        new Patch(),
-        new Delete(),
-    ],
-    normalizationContext: ['groups' => ['user:read']],
-    denormalizationContext: ['groups' => ['user:write']],
-    paginationItemsPerPage: 10
+        new GetCollection(
+            normalizationContext: ['groups' => ['user:read:collection']],
+            paginationItemsPerPage: 10
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['user:read:item']]
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['user:write:create']],
+            normalizationContext: ['groups' => ['user:read:item']]
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['user:write:update']],
+            normalizationContext: ['groups' => ['user:read:item']]
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['user:write:patch']],
+            normalizationContext: ['groups' => ['user:read:item']]
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN') or object == user"
+        )
+    ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'username' => 'partial',
@@ -45,43 +60,43 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'guid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator')]
-    #[Groups(['user:read', 'chapter:read', 'cover_art:read'])]
+    #[Groups(['user:read:collection', 'user:read:item', 'chapter:read:collection', 'chapter:read:item', 'cover_art:read:collection', 'cover_art:read:item'])]
     private ?string $id = null;
 
     #[ORM\Column(type: 'string', length: 64, unique: true)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read:collection', 'user:read:item', 'user:write:create', 'user:write:update', 'user:write:patch'])]
     #[Assert\NotBlank]
     #[Assert\Length(min: 1, max: 64)]
     private string $username;
 
     #[ORM\Column(type: 'string', length: 255, unique: true)]
-    #[Groups(['user:write', 'user:read'])]
+    #[Groups(['user:read:collection', 'user:read:item', 'user:write:create', 'user:write:update', 'user:write:patch'])]
     #[Assert\Email]
     #[Assert\Length(max: 255)]
     private string $email;
 
     #[ORM\Column(type: 'string', length: 1024)]
-    #[Groups(['user:write', 'user:read'])]
+    #[Groups(['user:read:collection', 'user:read:item', 'user:write:create', 'user:write:update', 'user:write:patch'])]
     #[Assert\NotBlank]
     #[Assert\Length(min: 8, max: 1024)]
     private string $password;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read:collection', 'user:read:item', 'user:write:create', 'user:write:update', 'user:write:patch'])]
     private array $roles = [];
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read:collection', 'user:read:item', 'user:write:create', 'user:write:update', 'user:write:patch'])]
     #[Assert\NotNull]
     #[Assert\Positive]
     private int $version = 1;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read:collection', 'user:read:item'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read:collection', 'user:read:item'])]
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\OneToMany(mappedBy: 'uploader', targetEntity: Chapter::class)]

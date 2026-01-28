@@ -3,19 +3,46 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Attributes\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'manga_recommendation')]
 #[ApiResource(
-    normalizationContext: ['groups' => ['manga_recommendation:read']],
-    denormalizationContext: ['groups' => ['manga_recommendation:write']],
-    paginationItemsPerPage: 10
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['manga_recommendation:read:collection']],
+            paginationItemsPerPage: 10
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['manga_recommendation:read:item']]
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['manga_recommendation:write:create']],
+            normalizationContext: ['groups' => ['manga_recommendation:read:item']]
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['manga_recommendation:write:update']],
+            normalizationContext: ['groups' => ['manga_recommendation:read:item']]
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['manga_recommendation:write:patch']],
+            normalizationContext: ['groups' => ['manga_recommendation:read:item']]
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN')"
+        )
+    ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'manga.id' => 'exact'
@@ -27,31 +54,31 @@ class MangaRecommendation
     #[ORM\Column(type: 'guid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator')]
-    #[Groups(['manga_recommendation:read'])]
+    #[Groups(['manga_recommendation:read:collection', 'manga_recommendation:read:item'])]
     private ?string $id = null;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['manga_recommendation:read', 'manga_recommendation:write'])]
+    #[Groups(['manga_recommendation:read:collection', 'manga_recommendation:read:item', 'manga_recommendation:write:create', 'manga_recommendation:write:update', 'manga_recommendation:write:patch'])]
     #[Assert\NotNull]
     #[Assert\Range(min: 0, max: 1)]
     private float $score;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['manga_recommendation:read'])]
+    #[Groups(['manga_recommendation:read:collection', 'manga_recommendation:read:item'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['manga_recommendation:read'])]
+    #[Groups(['manga_recommendation:read:collection', 'manga_recommendation:read:item'])]
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\ManyToOne(targetEntity: Manga::class, inversedBy: 'recommendations')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['manga_recommendation:read', 'manga_recommendation:write'])]
+    #[Groups(['manga_recommendation:read:collection', 'manga_recommendation:read:item', 'manga_recommendation:write:create', 'manga_recommendation:write:update', 'manga_recommendation:write:patch'])]
     private Manga $manga;
 
     #[ORM\ManyToOne(targetEntity: Manga::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['manga_recommendation:read', 'manga_recommendation:write'])]
+    #[Groups(['manga_recommendation:read:collection', 'manga_recommendation:read:item', 'manga_recommendation:write:create', 'manga_recommendation:write:update', 'manga_recommendation:write:patch'])]
     private Manga $recommendedManga;
 
     public function __construct()

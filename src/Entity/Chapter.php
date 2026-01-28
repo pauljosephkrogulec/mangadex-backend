@@ -3,6 +3,12 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
@@ -17,9 +23,30 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ORM\Table(name: 'chapter')]
 #[ApiResource(
-    normalizationContext: ['groups' => ['chapter:read']],
-    denormalizationContext: ['groups' => ['chapter:write']],
-    paginationItemsPerPage: 10
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['chapter:read:collection']],
+            paginationItemsPerPage: 10
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['chapter:read:item']]
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['chapter:write:create']],
+            normalizationContext: ['groups' => ['chapter:read:item']]
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['chapter:write:update']],
+            normalizationContext: ['groups' => ['chapter:read:item']]
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['chapter:write:patch']],
+            normalizationContext: ['groups' => ['chapter:read:item']]
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN') or object.getUploader() == user"
+        )
+    ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'title' => 'partial',
@@ -38,78 +65,78 @@ class Chapter
     #[ORM\Column(type: 'guid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator')]
-    #[Groups(['chapter:read'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item'])]
     private ?string $id = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['chapter:read', 'chapter:write'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item', 'chapter:write:create', 'chapter:write:update', 'chapter:write:patch'])]
     #[Assert\Length(max: 255)]
     private ?string $title = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['chapter:read', 'chapter:write'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item', 'chapter:write:create', 'chapter:write:update', 'chapter:write:patch'])]
     private ?string $volume = null;
 
     #[ORM\Column(type: 'string', length: 8, nullable: true)]
-    #[Groups(['chapter:read', 'chapter:write'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item', 'chapter:write:create', 'chapter:write:update', 'chapter:write:patch'])]
     #[Assert\Length(max: 8)]
     private ?string $chapter = null;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(['chapter:read'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item'])]
     private int $pages = 0;
 
     #[ORM\Column(type: 'string', length: 10)]
-    #[Groups(['chapter:read', 'chapter:write'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item', 'chapter:write:create', 'chapter:write:update', 'chapter:write:patch'])]
     #[Assert\NotNull]
     #[Assert\Regex(pattern: '/^[a-z]{2}(-[a-z]{2})?$/')]
     private string $translatedLanguage;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['chapter:read', 'chapter:write'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item', 'chapter:write:create', 'chapter:write:update', 'chapter:write:patch'])]
     private User $uploader;
 
     #[ORM\Column(type: 'string', length: 512, nullable: true)]
-    #[Groups(['chapter:read', 'chapter:write'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item', 'chapter:write:create', 'chapter:write:update', 'chapter:write:patch'])]
     #[Assert\Url]
     #[Assert\Length(max: 512)]
     private ?string $externalUrl = null;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(['chapter:read', 'chapter:write'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item', 'chapter:write:create', 'chapter:write:update', 'chapter:write:patch'])]
     #[Assert\NotNull]
     #[Assert\Positive]
     private int $version = 1;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['chapter:read'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['chapter:read'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item'])]
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
-    #[Groups(['chapter:read', 'chapter:write'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item', 'chapter:write:create', 'chapter:write:update', 'chapter:write:patch'])]
     private ?\DateTimeImmutable $publishAt = null;
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
-    #[Groups(['chapter:read'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item'])]
     private ?\DateTimeImmutable $readableAt = null;
 
     #[ORM\Column(type: 'boolean')]
-    #[Groups(['chapter:read'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item'])]
     private bool $isUnavailable = false;
 
     #[ORM\ManyToOne(targetEntity: Manga::class, inversedBy: 'chapters')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['chapter:read', 'chapter:write'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item', 'chapter:write:create', 'chapter:write:update', 'chapter:write:patch'])]
     private Manga $manga;
 
     #[ORM\ManyToMany(targetEntity: ScanlationGroup::class, inversedBy: 'chapters')]
     #[ORM\JoinTable(name: 'chapter_scanlation_groups')]
-    #[Groups(['chapter:read', 'chapter:write'])]
+    #[Groups(['chapter:read:collection', 'chapter:read:item', 'chapter:write:create', 'chapter:write:update', 'chapter:write:patch'])]
     private Collection $groups;
 
     #[ORM\OneToMany(mappedBy: 'chapter', targetEntity: Report::class, cascade: ['remove'])]
