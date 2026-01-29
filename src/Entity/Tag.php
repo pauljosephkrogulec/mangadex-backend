@@ -60,7 +60,7 @@ class Tag
     private ?string $id = null;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['tag:read:collection', 'tag:read:item', 'tag:write:create', 'tag:write:update', 'tag:write:patch'])]
+    #[Groups(['tag:read:collection', 'tag:read:item', 'tag:write:create', 'tag:write:update', 'tag:write:patch', 'manga:read:item'])]
     #[Assert\NotNull]
     private array $name = [];
 

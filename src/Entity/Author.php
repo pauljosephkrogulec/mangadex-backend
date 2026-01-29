@@ -62,7 +62,7 @@ class Author
     private ?string $id = null;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch'])]
+    #[Groups(['author:read:collection', 'author:read:item', 'author:write:create', 'author:write:update', 'author:write:patch', 'manga:read:item'])]
     #[Assert\NotNull]
     private array $name = [];
 
