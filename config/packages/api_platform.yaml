@@ -17,3 +17,11 @@ api_platform:
     eager_loading:
         enabled: false
         fetch_partial: true
+    # Collection pagination configuration
+    collection:
+        pagination:
+            enabled: true
+            page_parameter_name: page
+            items_per_page_parameter_name: itemsPerPage
+            enabled_parameter_name: pagination
+            partial_parameter_name: partial

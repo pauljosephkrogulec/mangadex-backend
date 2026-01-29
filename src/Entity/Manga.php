@@ -25,23 +25,25 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new GetCollection(
-            normalizationContext: ['groups' => ['manga:read:collection', 'cover_art:read']],
-            paginationItemsPerPage: 10
+            paginationEnabled: true,
+            paginationClientEnabled: true,
+            paginationClientItemsPerPage: true,
+            normalizationContext: ['groups' => ['manga:read:collection', 'cover_art:read']]
         ),
         new Get(
             normalizationContext: ['groups' => ['manga:read:item', 'cover_art:read']]
         ),
         new Post(
-            denormalizationContext: ['groups' => ['manga:write:create']],
-            normalizationContext: ['groups' => ['manga:read:item', 'cover_art:read']]
+            normalizationContext: ['groups' => ['manga:read:item', 'cover_art:read']],
+            denormalizationContext: ['groups' => ['manga:write:create']]
         ),
         new Put(
-            denormalizationContext: ['groups' => ['manga:write:update']],
-            normalizationContext: ['groups' => ['manga:read:item', 'cover_art:read']]
+            normalizationContext: ['groups' => ['manga:read:item', 'cover_art:read']],
+            denormalizationContext: ['groups' => ['manga:write:update']]
         ),
         new Patch(
-            denormalizationContext: ['groups' => ['manga:write:patch']],
-            normalizationContext: ['groups' => ['manga:read:item', 'cover_art:read']]
+            normalizationContext: ['groups' => ['manga:read:item', 'cover_art:read']],
+            denormalizationContext: ['groups' => ['manga:write:patch']]
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN')"
