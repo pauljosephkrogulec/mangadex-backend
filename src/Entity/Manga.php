@@ -70,11 +70,11 @@ class Manga
     #[ORM\Column(type: 'guid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator')]
-    #[Groups(['manga:read:collection', 'manga:read:item', 'chapter:read', 'cover_art:read'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'chapter:read', 'cover_art:read', 'chapter:read:item'])]
     private ?string $id = null;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch'])]
+    #[Groups(['manga:read:collection', 'manga:read:item', 'manga:write:create', 'manga:write:update', 'manga:write:patch', 'chapter:read:item'])]
     #[Assert\NotNull]
     private array $title = [];
 

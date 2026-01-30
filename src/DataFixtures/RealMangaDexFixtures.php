@@ -32,25 +32,37 @@ class RealMangaDexFixtures extends Fixture
         $mangas = $mangas->toArray();
         foreach($mangas['data'] as $index => $manga) {
             $id = $manga['id'];
-            $chapters = $this->httpClient->request('GET', "https://api.mangadex.org/chapter?manga={$id}&limit=20&includeExternalUrl=0");
+            $chapters = $this->httpClient->request('GET', "https://api.mangadex.org/chapter?manga={$id}&limit=10&includeExternalUrl=0");
             $chapters = $chapters->toArray();
-            $mangas['data'][$index]['chapters'] = $chapters['data'];
+            $mangas['data'][$index]['attributes']['chapters'] = $chapters['data'];
             if (!empty($chapters['data'])) {
-                $chapterId = $chapters['data'][0]['id'];
-                $pages = $this->httpClient->request('GET', "https://api.mangadex.org/at-home/server/{$chapterId}");
-                $pages = $pages->toArray(); 
-                $mangas['data'][$index]['pages'] = $pages;
+                foreach($chapters['data'] as $index2 => $chapter) {
+                    $chapterId = $chapter['id'];
+                    $pages = $this->httpClient->request('GET', "https://api.mangadex.org/at-home/server/{$chapterId}");
+                    $pages = $pages->toArray();
+                    // Construct complete URLs using baseUrl and hash
+                    $baseUrl = $pages['baseUrl'];
+                    $hash = $pages['chapter']['hash'];
+                    $completeUrls = [];
+                    foreach($pages['chapter']['data'] as $filename) {
+                        $completeUrls[] = $baseUrl . '/data/' . $hash . '/' . $filename;
+                    }
+                    $mangas['data'][$index]['attributes']['chapters'][$index2]['attributes']['pages'] = $completeUrls;
+                    sleep(2);
+                }
             }
             sleep(2);
         }
         // Create all entities
-        $this->createTags($manager, $mangas['data']);
-        $this->createAuthors($manager, $mangas['data'][0]['relationships']);
-        $this->createArtists($manager, $mangas['data'][0]['relationships']);
-        $mangaEntities = $this->createManga($manager, $mangas['data'], $users);
-        $this->createChapters($manager, $mangas['data'], $users, $mangaEntities);
-        $this->createCoverArts($manager, $mangas['data'], $users, $mangaEntities);
-        
+        foreach ($mangas['data'] as $manga) {
+            $this->createTags($manager, $manga);
+            $this->createAuthors($manager, $manga['relationships']);
+            $this->createArtists($manager, $manga['relationships']);
+            $mangaEntity = $this->createManga($manager, $manga);
+            $this->createChapters($manager, $manga, $users, $mangaEntity);
+            $this->createCoverArts($manager, $manga, $users, $mangaEntity);
+        }
+
         $manager->flush();
     }
 
@@ -79,49 +91,43 @@ class RealMangaDexFixtures extends Fixture
         return $users;
     }
 
-    private function createManga($manager, $mangas, $users)
+    private function createManga($manager, $manga)
     {
-        $mangaEntities = [];
-        foreach($mangas as $manga) {
-            $mangaEntity = new Manga();
-            $mangaEntity->setTitle($manga['attributes']['title']);
-            $mangaEntity->setDescription($manga['attributes']['description']);
-            $mangaEntity->setStatus($manga['attributes']['status']);
-            $mangaEntity->setPublicationDemographic($manga['attributes']['publicationDemographic']);
-            $mangaEntity->setContentRating($manga['attributes']['contentRating']);
-            $mangaEntity->setYear($manga['attributes']['year']);
-            $mangaEntity->setOriginalLanguage($manga['attributes']['originalLanguage']);
-            $mangaEntity->setAvailableTranslatedLanguages($manga['attributes']['availableTranslatedLanguages']);
-            $mangaEntity->setLatestUploadedChapter($manga['attributes']['latestUploadedChapter']);
-            $mangaEntity->setState('published');
-            $mangaEntity->setVersion($manga['attributes']['version']);
-            $mangaEntity->setCreatedAt(new \DateTimeImmutable($manga['attributes']['createdAt']));
-            $mangaEntity->setUpdatedAt(new \DateTimeImmutable($manga['attributes']['updatedAt']));
-            
-            // Add authors
-            $authorEntities = $this->createAuthors($manager, $manga['relationships']);
-            foreach($authorEntities as $author) {
-                $mangaEntity->addAuthor($author);
-            }
-            
-            // Add artists
-            $artistEntities = $this->createArtists($manager, $manga['relationships']);
-            foreach($artistEntities as $artist) {
-                $mangaEntity->addArtist($artist);
-            }
-
-            // Add tags
-            $tagEntities = $this->getTags($manager, $manga['attributes']['tags']);
-            foreach($tagEntities as $tag) {
-                if ($tag) {
-                    $mangaEntity->addTag($tag);
-                }
-            }
-            
-            $manager->persist($mangaEntity);
-            $mangaEntities[$manga['id']] = $mangaEntity;
+        $mangaEntity = new Manga();
+        $mangaEntity->setTitle($manga['attributes']['title']);
+        $mangaEntity->setDescription($manga['attributes']['description']);
+        $mangaEntity->setStatus($manga['attributes']['status']);
+        $mangaEntity->setPublicationDemographic($manga['attributes']['publicationDemographic']);
+        $mangaEntity->setContentRating($manga['attributes']['contentRating']);
+        $mangaEntity->setYear($manga['attributes']['year']);
+        $mangaEntity->setOriginalLanguage($manga['attributes']['originalLanguage']);
+        $mangaEntity->setAvailableTranslatedLanguages($manga['attributes']['availableTranslatedLanguages']);
+        $mangaEntity->setLatestUploadedChapter($manga['attributes']['latestUploadedChapter']);
+        $mangaEntity->setState('published');
+        $mangaEntity->setVersion($manga['attributes']['version']);
+        $mangaEntity->setCreatedAt(new \DateTimeImmutable($manga['attributes']['createdAt']));
+        $mangaEntity->setUpdatedAt(new \DateTimeImmutable($manga['attributes']['updatedAt']));
+        // Add authors
+        $authorEntities = $this->createAuthors($manager, $manga['relationships']);
+        foreach($authorEntities as $author) {
+            $mangaEntity->addAuthor($author);
         }
-        return $mangaEntities;
+        // Add artists
+        $artistEntities = $this->createArtists($manager, $manga['relationships']);
+        foreach($artistEntities as $artist) {
+            $mangaEntity->addArtist($artist);
+        }
+
+        // Add tags
+        $tagEntities = $this->getTags($manager, $manga['attributes']['tags']);
+        foreach($tagEntities as $tag) {
+            if ($tag) {
+                $mangaEntity->addTag($tag);
+            }
+        }
+
+        $manager->persist($mangaEntity);
+        return $mangaEntity;
     }
 
     public function getTags($manager, $tagsData): array
@@ -145,90 +151,88 @@ class RealMangaDexFixtures extends Fixture
         return $tags;
     }
 
-    private function createChapters($manager, $mangas, $users, $mangaEntities): array
+    private function createChapters($manager, $manga, $users, $mangaEntity): array
     {
         $chapterEntities = [];
-        foreach($mangas as $manga) {
-            if (isset($manga['chapters'])) {
-                foreach($manga['chapters'] as $chapterData) {
-                    $chapter = new Chapter();
-                    $chapter->setTitle($chapterData['attributes']['title']);
-                    $chapter->setVolume($chapterData['attributes']['volume']);
-                    $chapter->setChapter($chapterData['attributes']['chapter']);
-                    $chapter->setPages($chapterData['attributes']['pages']);
-                    $chapter->setTranslatedLanguage($chapterData['attributes']['translatedLanguage']);
-                    $chapter->setExternalUrl($chapterData['attributes']['externalUrl']);
-                    $chapter->setVersion($chapterData['attributes']['version']);
-                    $chapter->setIsUnavailable($chapterData['attributes']['isUnavailable']);
-                    
-                    if ($chapterData['attributes']['publishAt']) {
-                        $chapter->setPublishAt(new \DateTimeImmutable($chapterData['attributes']['publishAt']));
-                    }
-                    if ($chapterData['attributes']['readableAt']) {
-                        $chapter->setReadableAt(new \DateTimeImmutable($chapterData['attributes']['readableAt']));
-                    }
-                    
-                    $chapter->setCreatedAt(new \DateTimeImmutable($chapterData['attributes']['createdAt']));
-                    $chapter->setUpdatedAt(new \DateTimeImmutable($chapterData['attributes']['updatedAt']));
-                    
-                    // Set uploader (random user for now)
-                    $chapter->setUploader($users[array_rand($users)]);
-                    
-                    // Set manga relationship
-                    $chapter->setManga($mangaEntities[$manga['id']]);
-                    
-                    $manager->persist($chapter);
-                    $chapterEntities[] = $chapter;
+        if (isset($manga['attributes']['chapters'])) {
+            foreach($manga['attributes']['chapters'] as $chapterData) {
+                $chapter = new Chapter();
+                $chapter->setTitle($chapterData['attributes']['title']);
+                $chapter->setVolume($chapterData['attributes']['volume']);
+                $chapter->setChapter($chapterData['attributes']['chapter']);
+                $chapter->setPages(count($chapterData['attributes']['pages']));
+                foreach($chapterData['attributes']['pages'] as $page) {
+                    $chapter->addPagesData($page);
                 }
+                $chapter->setTranslatedLanguage($chapterData['attributes']['translatedLanguage']);
+                $chapter->setExternalUrl($chapterData['attributes']['externalUrl']);
+                $chapter->setVersion($chapterData['attributes']['version']);
+                $chapter->setIsUnavailable($chapterData['attributes']['isUnavailable']);
+
+                if ($chapterData['attributes']['publishAt']) {
+                    $chapter->setPublishAt(new \DateTimeImmutable($chapterData['attributes']['publishAt']));
+                }
+                if ($chapterData['attributes']['readableAt']) {
+                    $chapter->setReadableAt(new \DateTimeImmutable($chapterData['attributes']['readableAt']));
+                }
+
+                $chapter->setCreatedAt(new \DateTimeImmutable($chapterData['attributes']['createdAt']));
+                $chapter->setUpdatedAt(new \DateTimeImmutable($chapterData['attributes']['updatedAt']));
+
+                // Set uploader (random user for now)
+                $chapter->setUploader($users[array_rand($users)]);
+
+                // Set manga relationship
+                $chapter->setManga($mangaEntity);
+
+                $manager->persist($chapter);
+                $chapterEntities[] = $chapter;
             }
         }
         return $chapterEntities;
     }
 
-    private function createTags($manager, $mangas): array 
+    private function createTags($manager, $manga): array
     {
         $tagEntities = [];
         $processedTags = [];
         $tagRepository = $manager->getRepository(Tag::class);
-        
-        foreach($mangas as $manga) {
-            if (isset($manga['attributes']['tags'])) {
-                foreach($manga['attributes']['tags'] as $tagData) {
-                    if ($tagData['type'] === 'tag' && !isset($processedTags[$tagData['id']])) {
-                        // Check if tag already exists in database
-                        // Since name is stored as JSON, we need to find by comparing the array structure
-                        $existingTags = $tagRepository->findAll();
-                        $existingTag = null;
-                        
-                        foreach ($existingTags as $tag) {
-                            if ($tag->getName() == $tagData['attributes']['name']) {
-                                $existingTag = $tag;
-                                break;
-                            }
+        if (isset($manga['attributes']['tags'])) {
+            foreach($manga['attributes']['tags'] as $tagData) {
+                if ($tagData['type'] === 'tag' && !isset($processedTags[$tagData['id']])) {
+                    // Check if tag already exists in database
+                    // Since name is stored as JSON, we need to find by comparing the array structure
+                    $existingTags = $tagRepository->findAll();
+                    $existingTag = null;
+
+                    foreach ($existingTags as $tag) {
+                        if ($tag->getName() == $tagData['attributes']['name']) {
+                            $existingTag = $tag;
+                            break;
                         }
-                        if ($existingTag) {
-                            $tagEntities[] = $existingTag;
-                            $processedTags[$tagData['id']] = $existingTag;
-                        } else {
-                            // Create new tag
-                            $tag = new Tag();
-                            $tag->setName($tagData['attributes']['name']);
-                            $tag->setDescription($tagData['attributes']['description']);
-                            $tag->setTagGroup($tagData['attributes']['group']);
-                            $tag->setVersion($tagData['attributes']['version']);
-                            $tag->setCreatedAt(new \DateTimeImmutable());
-                            $tag->setUpdatedAt(new \DateTimeImmutable());
-                            
-                            $manager->persist($tag);
-                            $tagEntities[] = $tag;
-                            $processedTags[$tagData['id']] = $tag;
-                        }
+                    }
+                    if ($existingTag) {
+                        $tagEntities[] = $existingTag;
+                        $processedTags[$tagData['id']] = $existingTag;
+                    } else {
+                        // Create new tag
+                        $tag = new Tag();
+                        $tag->setName($tagData['attributes']['name']);
+                        $tag->setDescription($tagData['attributes']['description']);
+                        $tag->setTagGroup($tagData['attributes']['group']);
+                        $tag->setVersion($tagData['attributes']['version']);
+                        $tag->setCreatedAt(new \DateTimeImmutable());
+                        $tag->setUpdatedAt(new \DateTimeImmutable());
+
+                        $manager->persist($tag);
+                        $tagEntities[] = $tag;
+                        $processedTags[$tagData['id']] = $tag;
                     }
                 }
             }
         }
         $manager->flush();
-        
+
         return $tagEntities;
     }
 
@@ -236,7 +240,7 @@ class RealMangaDexFixtures extends Fixture
     {
         $authorEntities = [];
         $processedAuthors = [];
-        
+
         foreach($authors as $author) {
             if($author['type'] === 'author' && !isset($processedAuthors[$author['id']])) {
                 $authorEntity = new Author();
@@ -244,11 +248,11 @@ class RealMangaDexFixtures extends Fixture
                 $authorEntity->setVersion(1);
                 $authorEntity->setCreatedAt(new \DateTimeImmutable());
                 $authorEntity->setUpdatedAt(new \DateTimeImmutable());
-                
+
                 if (isset($author['attributes']['twitter'])) {
                     $authorEntity->setTwitter(['en' => $author['attributes']['twitter']]);
                 }
-                
+
                 $manager->persist($authorEntity);
                 $authorEntities[] = $authorEntity;
                 $processedAuthors[$author['id']] = $authorEntity;
@@ -261,7 +265,7 @@ class RealMangaDexFixtures extends Fixture
     {
         $artistEntities = [];
         $processedArtists = [];
-        
+
         foreach($artists as $artist) {
             if($artist['type'] === 'artist' && !isset($processedArtists[$artist['id']])) {
                 $artistEntity = new Author();
@@ -269,11 +273,11 @@ class RealMangaDexFixtures extends Fixture
                 $artistEntity->setVersion(1);
                 $artistEntity->setCreatedAt(new \DateTimeImmutable());
                 $artistEntity->setUpdatedAt(new \DateTimeImmutable());
-                
+
                 if (isset($artist['attributes']['twitter'])) {
                     $artistEntity->setTwitter(['en' => $artist['attributes']['twitter']]);
                 }
-                
+
                 $manager->persist($artistEntity);
                 $artistEntities[] = $artistEntity;
                 $processedArtists[$artist['id']] = $artistEntity;
@@ -282,31 +286,29 @@ class RealMangaDexFixtures extends Fixture
         return $artistEntities;
     }
 
-    private function createCoverArts($manager, $mangas, $users, $mangaEntities): array
+    private function createCoverArts($manager, $manga, $users, $mangaEntity): array
     {
         $coverArtEntities = [];
-        foreach($mangas as $manga) {
-            if (isset($manga['relationships'])) {
-                foreach($manga['relationships'] as $relationship) {
-                    if ($relationship['type'] === 'cover_art') {
-                        $coverArt = new CoverArt();
-                        $coverArt->setVolume($relationship['attributes']['volume'] ?? null);
-                        $coverArt->setFileName($manga['id'] . '/' . $relationship['attributes']['fileName']);
-                        $coverArt->setLocale($relationship['attributes']['locale'] ?? null);
-                        $coverArt->setDescription($relationship['attributes']['description'] ?? null);
-                        $coverArt->setVersion($relationship['attributes']['version']);
-                        $coverArt->setCreatedAt(new \DateTimeImmutable($relationship['attributes']['createdAt']));
-                        $coverArt->setUpdatedAt(new \DateTimeImmutable($relationship['attributes']['updatedAt']));
-                        
-                        // Set uploader (random user for now)
-                        $coverArt->setUploader($users[array_rand($users)]);
-                        
-                        // Set manga relationship
-                        $coverArt->setManga($mangaEntities[$manga['id']]);
-                        
-                        $manager->persist($coverArt);
-                        $coverArtEntities[] = $coverArt;
-                    }
+        if (isset($manga['relationships'])) {
+            foreach($manga['relationships'] as $relationship) {
+                if ($relationship['type'] === 'cover_art') {
+                    $coverArt = new CoverArt();
+                    $coverArt->setVolume($relationship['attributes']['volume'] ?? null);
+                    $coverArt->setFileName($manga['id'] . '/' . $relationship['attributes']['fileName']);
+                    $coverArt->setLocale($relationship['attributes']['locale'] ?? null);
+                    $coverArt->setDescription($relationship['attributes']['description'] ?? null);
+                    $coverArt->setVersion($relationship['attributes']['version']);
+                    $coverArt->setCreatedAt(new \DateTimeImmutable($relationship['attributes']['createdAt']));
+                    $coverArt->setUpdatedAt(new \DateTimeImmutable($relationship['attributes']['updatedAt']));
+
+                    // Set uploader (random user for now)
+                    $coverArt->setUploader($users[array_rand($users)]);
+
+                    // Set manga relationship
+                    $coverArt->setManga($mangaEntity);
+
+                    $manager->persist($coverArt);
+                    $coverArtEntities[] = $coverArt;
                 }
             }
         }

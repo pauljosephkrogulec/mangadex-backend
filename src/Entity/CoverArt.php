@@ -66,7 +66,7 @@ class CoverArt
     private ?string $volume = null;
 
     #[ORM\Column(type: 'string', length: 512)]
-    #[Groups(['cover_art:read:collection', 'cover_art:read:item', 'cover_art:write:create', 'cover_art:write:update', 'cover_art:write:patch'])]
+    #[Groups(['cover_art:read:collection', 'cover_art:read:item', 'cover_art:write:create', 'cover_art:write:update', 'cover_art:write:patch', 'manga:read:collection', 'manga:read:item'])]
     #[Assert\NotBlank]
     #[Assert\Url]
     private string $fileName;

@@ -17,6 +17,7 @@ use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use phpDocumentor\Reflection\Types\Array_;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -85,6 +86,10 @@ class Chapter
     #[ORM\Column(type: 'integer')]
     #[Groups(['chapter:read:collection', 'chapter:read:item'])]
     private int $pages = 0;
+
+    #[ORM\Column(type: 'json')]
+    #[Groups(['chapter:read:collection', 'chapter:read:item'])]
+    private array $pagesData = [];
 
     #[ORM\Column(type: 'string', length: 10)]
     #[Groups(['chapter:read:collection', 'chapter:read:item', 'chapter:write:create', 'chapter:write:update', 'chapter:write:patch'])]
@@ -196,6 +201,17 @@ class Chapter
     public function setPages(int $pages): self
     {
         $this->pages = $pages;
+        return $this;
+    }
+
+    public function getPagesData() : array
+    {
+        return $this->pagesData;
+    }
+
+    public function addPagesData(string $pagesData): self
+    {
+        $this->pagesData[] = $pagesData;
         return $this;
     }
 
