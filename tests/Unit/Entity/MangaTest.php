@@ -2,8 +2,8 @@
 
 namespace App\Tests\Unit\Entity;
 
-use App\Entity\Manga;
 use App\Entity\Author;
+use App\Entity\Manga;
 use App\Entity\Tag;
 use PHPUnit\Framework\TestCase;
 
@@ -154,10 +154,10 @@ class MangaTest extends TestCase
     {
         $createdAt = new \DateTimeImmutable('2023-01-01');
         $updatedAt = new \DateTimeImmutable('2023-01-02');
-        
+
         $this->manga->setCreatedAt($createdAt);
         $this->manga->setUpdatedAt($updatedAt);
-        
+
         $this->assertEquals($createdAt, $this->manga->getCreatedAt());
         $this->assertEquals($updatedAt, $this->manga->getUpdatedAt());
     }
@@ -172,7 +172,7 @@ class MangaTest extends TestCase
     {
         $author = new Author();
         $author->setName(['en' => 'Test Author']);
-        
+
         $this->manga->addAuthor($author);
         $this->assertCount(1, $this->manga->getAuthors());
         $this->assertTrue($this->manga->getAuthors()->contains($author));
@@ -182,7 +182,7 @@ class MangaTest extends TestCase
     {
         $author = new Author();
         $author->setName(['en' => 'Test Author']);
-        
+
         $this->manga->addAuthor($author);
         $this->manga->removeAuthor($author);
         $this->assertCount(0, $this->manga->getAuthors());
@@ -198,7 +198,7 @@ class MangaTest extends TestCase
     {
         $artist = new Author();
         $artist->setName(['en' => 'Test Artist']);
-        
+
         $this->manga->addArtist($artist);
         $this->assertCount(1, $this->manga->getArtists());
         $this->assertTrue($this->manga->getArtists()->contains($artist));
@@ -215,7 +215,7 @@ class MangaTest extends TestCase
         $tag = new Tag();
         $tag->setName(['en' => 'Test Tag']);
         $tag->setTagGroup('genre');
-        
+
         $this->manga->addTag($tag);
         $this->assertCount(1, $this->manga->getTags());
         $this->assertTrue($this->manga->getTags()->contains($tag));

@@ -21,7 +21,7 @@ class LargeDatasetFixtures extends Fixture
     {
         // Generate a large dataset with 100 manga and related entities
         $this->generator->generateLargeDataset($manager, 100);
-        
+
         $manager->flush();
     }
 }

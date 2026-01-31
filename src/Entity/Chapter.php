@@ -2,22 +2,20 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
-use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use phpDocumentor\Reflection\Types\Array_;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -46,7 +44,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN') or object.getUploader() == user"
-        )
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
@@ -56,7 +54,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     'translatedLanguage' => 'exact',
     'manga.id' => 'exact',
     'uploader.id' => 'exact',
-    'groups.id' => 'exact'
+    'groups.id' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'publishAt', 'readableAt', 'volume', 'chapter'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt', 'publishAt', 'readableAt'])]
@@ -168,6 +166,7 @@ class Chapter
     public function setTitle(?string $title): self
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -179,6 +178,7 @@ class Chapter
     public function setVolume(?string $volume): self
     {
         $this->volume = $volume;
+
         return $this;
     }
 
@@ -190,6 +190,7 @@ class Chapter
     public function setChapter(?string $chapter): self
     {
         $this->chapter = $chapter;
+
         return $this;
     }
 
@@ -201,10 +202,11 @@ class Chapter
     public function setPages(int $pages): self
     {
         $this->pages = $pages;
+
         return $this;
     }
 
-    public function getPagesData() : array
+    public function getPagesData(): array
     {
         return $this->pagesData;
     }
@@ -212,6 +214,7 @@ class Chapter
     public function addPagesData(string $pagesData): self
     {
         $this->pagesData[] = $pagesData;
+
         return $this;
     }
 
@@ -223,6 +226,7 @@ class Chapter
     public function setTranslatedLanguage(string $translatedLanguage): self
     {
         $this->translatedLanguage = $translatedLanguage;
+
         return $this;
     }
 
@@ -234,6 +238,7 @@ class Chapter
     public function setUploader(User $uploader): self
     {
         $this->uploader = $uploader;
+
         return $this;
     }
 
@@ -245,6 +250,7 @@ class Chapter
     public function setExternalUrl(?string $externalUrl): self
     {
         $this->externalUrl = $externalUrl;
+
         return $this;
     }
 
@@ -256,6 +262,7 @@ class Chapter
     public function setVersion(int $version): self
     {
         $this->version = $version;
+
         return $this;
     }
 
@@ -267,6 +274,7 @@ class Chapter
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -278,6 +286,7 @@ class Chapter
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -289,6 +298,7 @@ class Chapter
     public function setPublishAt(?\DateTimeImmutable $publishAt): self
     {
         $this->publishAt = $publishAt;
+
         return $this;
     }
 
@@ -300,6 +310,7 @@ class Chapter
     public function setReadableAt(?\DateTimeImmutable $readableAt): self
     {
         $this->readableAt = $readableAt;
+
         return $this;
     }
 
@@ -311,6 +322,7 @@ class Chapter
     public function setIsUnavailable(bool $isUnavailable): self
     {
         $this->isUnavailable = $isUnavailable;
+
         return $this;
     }
 
@@ -322,6 +334,7 @@ class Chapter
     public function setManga(Manga $manga): self
     {
         $this->manga = $manga;
+
         return $this;
     }
 
@@ -335,12 +348,14 @@ class Chapter
         if (!$this->groups->contains($group)) {
             $this->groups->add($group);
         }
+
         return $this;
     }
 
     public function removeGroup(ScanlationGroup $group): self
     {
         $this->groups->removeElement($group);
+
         return $this;
     }
 
@@ -355,6 +370,7 @@ class Chapter
             $this->reports->add($report);
             $report->setObjectId($this->id);
         }
+
         return $this;
     }
 
@@ -364,6 +380,7 @@ class Chapter
             // Don't set objectId to null as it's a required field in Report entity
             // The report should be handled differently if needed
         }
+
         return $this;
     }
 
@@ -372,7 +389,7 @@ class Chapter
     public function updateTimestamps(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
-        if ($this->createdAt === null) {
+        if (null === $this->createdAt) {
             $this->createdAt = new \DateTimeImmutable();
         }
     }

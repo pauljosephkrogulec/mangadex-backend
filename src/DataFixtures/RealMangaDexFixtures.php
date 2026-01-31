@@ -28,24 +28,23 @@ class RealMangaDexFixtures extends Fixture
     {
         // Create users
         $users = $this->createUsers($manager);
-        $mangas = $this->httpClient->request('GET', 'https://api.mangadex.org/manga?limit=20&offset=0&excludedTagsMode=OR&status[]=ongoing&status[]=completed&status[]=hiatus&status[]=cancelled&publicationDemographic[]=shounen&publicationDemographic[]=shoujo&publicationDemographic[]=josei&publicationDemographic[]=seinen&publicationDemographic[]=none&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&order[followedCount]=desc&includes[]=manga&includes[]=cover_art&includes[]=author&includes[]=artist&includes[]=tag&hasUnavailableChapters=0');
+        $mangas = $this->httpClient->request('GET', 'https://api.mangadex.org/manga?limit=100&offset=0&excludedTagsMode=OR&status[]=ongoing&status[]=completed&status[]=hiatus&status[]=cancelled&publicationDemographic[]=shounen&publicationDemographic[]=shoujo&publicationDemographic[]=josei&publicationDemographic[]=seinen&publicationDemographic[]=none&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&order[followedCount]=desc&includes[]=manga&includes[]=cover_art&includes[]=author&includes[]=artist&includes[]=tag&hasUnavailableChapters=0');
         $mangas = $mangas->toArray();
-        foreach($mangas['data'] as $index => $manga) {
+        foreach ($mangas['data'] as $index => $manga) {
             $id = $manga['id'];
-            $chapters = $this->httpClient->request('GET', "https://api.mangadex.org/chapter?manga={$id}&limit=10&includeExternalUrl=0");
+            $chapters = $this->httpClient->request('GET', "https://api.mangadex.org/chapter?manga={$id}&limit=100&includeExternalUrl=0");
             $chapters = $chapters->toArray();
             $mangas['data'][$index]['attributes']['chapters'] = $chapters['data'];
             if (!empty($chapters['data'])) {
-                foreach($chapters['data'] as $index2 => $chapter) {
+                foreach ($chapters['data'] as $index2 => $chapter) {
                     $chapterId = $chapter['id'];
                     $pages = $this->httpClient->request('GET', "https://api.mangadex.org/at-home/server/{$chapterId}");
                     $pages = $pages->toArray();
-                    // Construct complete URLs using baseUrl and hash
                     $baseUrl = $pages['baseUrl'];
                     $hash = $pages['chapter']['hash'];
                     $completeUrls = [];
-                    foreach($pages['chapter']['data'] as $filename) {
-                        $completeUrls[] = $baseUrl . '/data/' . $hash . '/' . $filename;
+                    foreach ($pages['chapter']['data'] as $filename) {
+                        $completeUrls[] = $baseUrl.'/data/'.$hash.'/'.$filename;
                     }
                     $mangas['data'][$index]['attributes']['chapters'][$index2]['attributes']['pages'] = $completeUrls;
                     sleep(2);
@@ -69,7 +68,7 @@ class RealMangaDexFixtures extends Fixture
     private function createUsers(ObjectManager $manager): array
     {
         $users = [];
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 5; ++$i) {
             $user = new User();
             $user->setUsername("user{$i}");
             $user->setEmail("user{$i}@example.com");
@@ -109,36 +108,37 @@ class RealMangaDexFixtures extends Fixture
         $mangaEntity->setUpdatedAt(new \DateTimeImmutable($manga['attributes']['updatedAt']));
         // Add authors
         $authorEntities = $this->createAuthors($manager, $manga['relationships']);
-        foreach($authorEntities as $author) {
+        foreach ($authorEntities as $author) {
             $mangaEntity->addAuthor($author);
         }
         // Add artists
         $artistEntities = $this->createArtists($manager, $manga['relationships']);
-        foreach($artistEntities as $artist) {
+        foreach ($artistEntities as $artist) {
             $mangaEntity->addArtist($artist);
         }
 
         // Add tags
         $tagEntities = $this->getTags($manager, $manga['attributes']['tags']);
-        foreach($tagEntities as $tag) {
+        foreach ($tagEntities as $tag) {
             if ($tag) {
                 $mangaEntity->addTag($tag);
             }
         }
 
         $manager->persist($mangaEntity);
+
         return $mangaEntity;
     }
 
     public function getTags($manager, $tagsData): array
     {
         $tags = [];
-        foreach($tagsData as $tagData) {
+        foreach ($tagsData as $tagData) {
             $conn = $manager->getConnection();
             $sql = "
                 SELECT id
                 FROM tag
-                WHERE json_extract(name, '$.en') = :name
+                WHERE name->>'en' = :name
                 LIMIT 1
             ";
 
@@ -148,6 +148,7 @@ class RealMangaDexFixtures extends Fixture
 
             $tags[] = $id ? $manager->find(Tag::class, $id) : null;
         }
+
         return $tags;
     }
 
@@ -155,13 +156,13 @@ class RealMangaDexFixtures extends Fixture
     {
         $chapterEntities = [];
         if (isset($manga['attributes']['chapters'])) {
-            foreach($manga['attributes']['chapters'] as $chapterData) {
+            foreach ($manga['attributes']['chapters'] as $chapterData) {
                 $chapter = new Chapter();
                 $chapter->setTitle($chapterData['attributes']['title']);
                 $chapter->setVolume($chapterData['attributes']['volume']);
                 $chapter->setChapter($chapterData['attributes']['chapter']);
                 $chapter->setPages(count($chapterData['attributes']['pages']));
-                foreach($chapterData['attributes']['pages'] as $page) {
+                foreach ($chapterData['attributes']['pages'] as $page) {
                     $chapter->addPagesData($page);
                 }
                 $chapter->setTranslatedLanguage($chapterData['attributes']['translatedLanguage']);
@@ -189,6 +190,7 @@ class RealMangaDexFixtures extends Fixture
                 $chapterEntities[] = $chapter;
             }
         }
+
         return $chapterEntities;
     }
 
@@ -198,8 +200,8 @@ class RealMangaDexFixtures extends Fixture
         $processedTags = [];
         $tagRepository = $manager->getRepository(Tag::class);
         if (isset($manga['attributes']['tags'])) {
-            foreach($manga['attributes']['tags'] as $tagData) {
-                if ($tagData['type'] === 'tag' && !isset($processedTags[$tagData['id']])) {
+            foreach ($manga['attributes']['tags'] as $tagData) {
+                if ('tag' === $tagData['type'] && !isset($processedTags[$tagData['id']])) {
                     // Check if tag already exists in database
                     // Since name is stored as JSON, we need to find by comparing the array structure
                     $existingTags = $tagRepository->findAll();
@@ -241,8 +243,8 @@ class RealMangaDexFixtures extends Fixture
         $authorEntities = [];
         $processedAuthors = [];
 
-        foreach($authors as $author) {
-            if($author['type'] === 'author' && !isset($processedAuthors[$author['id']])) {
+        foreach ($authors as $author) {
+            if ('author' === $author['type'] && !isset($processedAuthors[$author['id']])) {
                 $authorEntity = new Author();
                 $authorEntity->setName(['en' => $author['attributes']['name']]);
                 $authorEntity->setVersion(1);
@@ -258,6 +260,7 @@ class RealMangaDexFixtures extends Fixture
                 $processedAuthors[$author['id']] = $authorEntity;
             }
         }
+
         return $authorEntities;
     }
 
@@ -266,8 +269,8 @@ class RealMangaDexFixtures extends Fixture
         $artistEntities = [];
         $processedArtists = [];
 
-        foreach($artists as $artist) {
-            if($artist['type'] === 'artist' && !isset($processedArtists[$artist['id']])) {
+        foreach ($artists as $artist) {
+            if ('artist' === $artist['type'] && !isset($processedArtists[$artist['id']])) {
                 $artistEntity = new Author();
                 $artistEntity->setName(['en' => $artist['attributes']['name']]);
                 $artistEntity->setVersion(1);
@@ -283,6 +286,7 @@ class RealMangaDexFixtures extends Fixture
                 $processedArtists[$artist['id']] = $artistEntity;
             }
         }
+
         return $artistEntities;
     }
 
@@ -290,11 +294,11 @@ class RealMangaDexFixtures extends Fixture
     {
         $coverArtEntities = [];
         if (isset($manga['relationships'])) {
-            foreach($manga['relationships'] as $relationship) {
-                if ($relationship['type'] === 'cover_art') {
+            foreach ($manga['relationships'] as $relationship) {
+                if ('cover_art' === $relationship['type']) {
                     $coverArt = new CoverArt();
                     $coverArt->setVolume($relationship['attributes']['volume'] ?? null);
-                    $coverArt->setFileName($manga['id'] . '/' . $relationship['attributes']['fileName']);
+                    $coverArt->setFileName($manga['id'].'/'.$relationship['attributes']['fileName']);
                     $coverArt->setLocale($relationship['attributes']['locale'] ?? null);
                     $coverArt->setDescription($relationship['attributes']['description'] ?? null);
                     $coverArt->setVersion($relationship['attributes']['version']);
@@ -312,6 +316,7 @@ class RealMangaDexFixtures extends Fixture
                 }
             }
         }
+
         return $coverArtEntities;
     }
 }

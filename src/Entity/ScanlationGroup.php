@@ -2,16 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -43,13 +43,13 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN') or object.getLeader() == user"
-        )
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'name' => 'partial',
     'leader.id' => 'exact',
-    'members.id' => 'exact'
+    'members.id' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'name'])]
 class ScanlationGroup
@@ -181,6 +181,7 @@ class ScanlationGroup
     public function setName(string $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -192,6 +193,7 @@ class ScanlationGroup
     public function setAltNames(array $altNames): self
     {
         $this->altNames = $altNames;
+
         return $this;
     }
 
@@ -203,6 +205,7 @@ class ScanlationGroup
     public function setWebsite(?string $website): self
     {
         $this->website = $website;
+
         return $this;
     }
 
@@ -214,6 +217,7 @@ class ScanlationGroup
     public function setIrcServer(?string $ircServer): self
     {
         $this->ircServer = $ircServer;
+
         return $this;
     }
 
@@ -225,6 +229,7 @@ class ScanlationGroup
     public function setIrcChannel(?string $ircChannel): self
     {
         $this->ircChannel = $ircChannel;
+
         return $this;
     }
 
@@ -236,6 +241,7 @@ class ScanlationGroup
     public function setDiscord(?string $discord): self
     {
         $this->discord = $discord;
+
         return $this;
     }
 
@@ -247,6 +253,7 @@ class ScanlationGroup
     public function setContactEmail(?string $contactEmail): self
     {
         $this->contactEmail = $contactEmail;
+
         return $this;
     }
 
@@ -258,6 +265,7 @@ class ScanlationGroup
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -269,6 +277,7 @@ class ScanlationGroup
     public function setTwitter(?string $twitter): self
     {
         $this->twitter = $twitter;
+
         return $this;
     }
 
@@ -280,6 +289,7 @@ class ScanlationGroup
     public function setMangaUpdates(?string $mangaUpdates): self
     {
         $this->mangaUpdates = $mangaUpdates;
+
         return $this;
     }
 
@@ -291,6 +301,7 @@ class ScanlationGroup
     public function setFocusedLanguages(?array $focusedLanguages): self
     {
         $this->focusedLanguages = $focusedLanguages;
+
         return $this;
     }
 
@@ -302,6 +313,7 @@ class ScanlationGroup
     public function setInactive(bool $inactive): self
     {
         $this->inactive = $inactive;
+
         return $this;
     }
 
@@ -313,6 +325,7 @@ class ScanlationGroup
     public function setLocked(bool $locked): self
     {
         $this->locked = $locked;
+
         return $this;
     }
 
@@ -324,6 +337,7 @@ class ScanlationGroup
     public function setOfficial(bool $official): self
     {
         $this->official = $official;
+
         return $this;
     }
 
@@ -335,6 +349,7 @@ class ScanlationGroup
     public function setVerified(bool $verified): self
     {
         $this->verified = $verified;
+
         return $this;
     }
 
@@ -346,6 +361,7 @@ class ScanlationGroup
     public function setExLicensed(bool $exLicensed): self
     {
         $this->exLicensed = $exLicensed;
+
         return $this;
     }
 
@@ -357,6 +373,7 @@ class ScanlationGroup
     public function setPublishDelay(?string $publishDelay): self
     {
         $this->publishDelay = $publishDelay;
+
         return $this;
     }
 
@@ -368,6 +385,7 @@ class ScanlationGroup
     public function setVersion(int $version): self
     {
         $this->version = $version;
+
         return $this;
     }
 
@@ -379,6 +397,7 @@ class ScanlationGroup
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -390,6 +409,7 @@ class ScanlationGroup
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -401,6 +421,7 @@ class ScanlationGroup
     public function setLeader(User $leader): self
     {
         $this->leader = $leader;
+
         return $this;
     }
 
@@ -415,6 +436,7 @@ class ScanlationGroup
             $this->members->add($member);
             $member->addScanlationGroup($this);
         }
+
         return $this;
     }
 
@@ -423,6 +445,7 @@ class ScanlationGroup
         if ($this->members->removeElement($member)) {
             $member->removeScanlationGroup($this);
         }
+
         return $this;
     }
 
@@ -437,6 +460,7 @@ class ScanlationGroup
             $this->chapters->add($chapter);
             $chapter->addGroup($this);
         }
+
         return $this;
     }
 
@@ -445,6 +469,7 @@ class ScanlationGroup
         if ($this->chapters->removeElement($chapter)) {
             $chapter->removeGroup($this);
         }
+
         return $this;
     }
 
@@ -459,6 +484,7 @@ class ScanlationGroup
             $this->reports->add($report);
             $report->setObjectId($this->id);
         }
+
         return $this;
     }
 
@@ -469,6 +495,7 @@ class ScanlationGroup
                 $report->setObjectId(null);
             }
         }
+
         return $this;
     }
 
@@ -477,7 +504,7 @@ class ScanlationGroup
     public function updateTimestamps(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
-        if ($this->createdAt === null) {
+        if (null === $this->createdAt) {
             $this->createdAt = new \DateTimeImmutable();
         }
     }

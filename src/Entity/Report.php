@@ -2,16 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -41,13 +41,13 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN') or object.getCreator() == user"
-        )
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'objectId' => 'exact',
     'creator.id' => 'exact',
-    'status' => 'exact'
+    'status' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 class Report
@@ -120,6 +120,7 @@ class Report
     public function setDetails(string $details): self
     {
         $this->details = $details;
+
         return $this;
     }
 
@@ -131,6 +132,7 @@ class Report
     public function setObjectId(string $objectId): self
     {
         $this->objectId = $objectId;
+
         return $this;
     }
 
@@ -142,6 +144,7 @@ class Report
     public function setStatus(string $status): self
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -153,6 +156,7 @@ class Report
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -164,6 +168,7 @@ class Report
     public function setCreator(User $creator): self
     {
         $this->creator = $creator;
+
         return $this;
     }
 
@@ -175,6 +180,7 @@ class Report
     public function setChapter(?Chapter $chapter): self
     {
         $this->chapter = $chapter;
+
         return $this;
     }
 
@@ -186,6 +192,7 @@ class Report
     public function setManga(?Manga $manga): self
     {
         $this->manga = $manga;
+
         return $this;
     }
 
@@ -197,6 +204,7 @@ class Report
     public function setAuthor(?Author $author): self
     {
         $this->author = $author;
+
         return $this;
     }
 
@@ -208,6 +216,7 @@ class Report
     public function setScanlationGroup(?ScanlationGroup $scanlationGroup): self
     {
         $this->scanlationGroup = $scanlationGroup;
+
         return $this;
     }
 
@@ -219,6 +228,7 @@ class Report
     public function setTag(?Tag $tag): self
     {
         $this->tag = $tag;
+
         return $this;
     }
 
@@ -230,6 +240,7 @@ class Report
     public function setCoverArt(?CoverArt $coverArt): self
     {
         $this->coverArt = $coverArt;
+
         return $this;
     }
 }

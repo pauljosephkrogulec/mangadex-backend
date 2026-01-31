@@ -2,17 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
-use App\State\UserPasswordHasherProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -46,12 +45,12 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN') or object == user"
-        )
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'username' => 'partial',
-    'email' => 'partial'
+    'email' => 'partial',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'username'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -160,6 +159,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUsername(string $username): self
     {
         $this->username = $username;
+
         return $this;
     }
 
@@ -171,6 +171,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): self
     {
         $this->email = $email;
+
         return $this;
     }
 
@@ -182,6 +183,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): self
     {
         $this->password = $password;
+
         return $this;
     }
 
@@ -197,6 +199,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
+
         return $this;
     }
 
@@ -208,6 +211,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setVersion(int $version): self
     {
         $this->version = $version;
+
         return $this;
     }
 
@@ -219,6 +223,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -230,6 +235,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -244,6 +250,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->chapters->add($chapter);
             $chapter->setUploader($this);
         }
+
         return $this;
     }
 
@@ -254,6 +261,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $chapter->setUploader($this);
             }
         }
+
         return $this;
     }
 
@@ -268,6 +276,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->coverArts->add($coverArt);
             $coverArt->setUploader($this);
         }
+
         return $this;
     }
 
@@ -278,6 +287,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $coverArt->setUploader($this);
             }
         }
+
         return $this;
     }
 
@@ -292,6 +302,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->followedManga->add($followedManga);
             $followedManga->addFollower($this);
         }
+
         return $this;
     }
 
@@ -300,6 +311,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->followedManga->removeElement($followedManga)) {
             $followedManga->removeFollower($this);
         }
+
         return $this;
     }
 
@@ -314,6 +326,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->followers->add($follower);
             $follower->addFollowing($this);
         }
+
         return $this;
     }
 
@@ -322,6 +335,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->followers->removeElement($follower)) {
             $follower->removeFollowing($this);
         }
+
         return $this;
     }
 
@@ -336,6 +350,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->following->add($following);
             $following->addFollower($this);
         }
+
         return $this;
     }
 
@@ -344,6 +359,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->following->removeElement($following)) {
             $following->removeFollower($this);
         }
+
         return $this;
     }
 
@@ -358,6 +374,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->customLists->add($customList);
             $customList->setOwner($this);
         }
+
         return $this;
     }
 
@@ -368,6 +385,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $customList->setOwner(null);
             }
         }
+
         return $this;
     }
 
@@ -382,6 +400,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->followedLists->add($followedList);
             $followedList->addFollower($this);
         }
+
         return $this;
     }
 
@@ -390,6 +409,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->followedLists->removeElement($followedList)) {
             $followedList->removeFollower($this);
         }
+
         return $this;
     }
 
@@ -404,6 +424,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->ledGroups->add($ledGroup);
             $ledGroup->setLeader($this);
         }
+
         return $this;
     }
 
@@ -414,6 +435,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $ledGroup->setLeader(null);
             }
         }
+
         return $this;
     }
 
@@ -428,6 +450,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->scanlationGroups->add($scanlationGroup);
             $scanlationGroup->addMember($this);
         }
+
         return $this;
     }
 
@@ -436,6 +459,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->scanlationGroups->removeElement($scanlationGroup)) {
             $scanlationGroup->removeMember($this);
         }
+
         return $this;
     }
 
@@ -450,6 +474,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->reports->add($report);
             $report->setCreator($this);
         }
+
         return $this;
     }
 
@@ -460,6 +485,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $report->setCreator(null);
             }
         }
+
         return $this;
     }
 
@@ -468,7 +494,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function updateTimestamps(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
-        if ($this->createdAt === null) {
+        if (null === $this->createdAt) {
             $this->createdAt = new \DateTimeImmutable();
         }
     }

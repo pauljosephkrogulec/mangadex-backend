@@ -2,16 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -41,11 +41,11 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN')"
-        )
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
-    'manga.id' => 'exact'
+    'manga.id' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'score'])]
 class MangaRecommendation
@@ -100,6 +100,7 @@ class MangaRecommendation
     public function setScore(float $score): self
     {
         $this->score = $score;
+
         return $this;
     }
 
@@ -111,6 +112,7 @@ class MangaRecommendation
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -122,6 +124,7 @@ class MangaRecommendation
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -133,6 +136,7 @@ class MangaRecommendation
     public function setManga(Manga $manga): self
     {
         $this->manga = $manga;
+
         return $this;
     }
 
@@ -144,6 +148,7 @@ class MangaRecommendation
     public function setRecommendedManga(Manga $recommendedManga): self
     {
         $this->recommendedManga = $recommendedManga;
+
         return $this;
     }
 
@@ -152,7 +157,7 @@ class MangaRecommendation
     public function updateTimestamps(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
-        if ($this->createdAt === null) {
+        if (null === $this->createdAt) {
             $this->createdAt = new \DateTimeImmutable();
         }
     }

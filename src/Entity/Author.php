@@ -2,16 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -43,13 +43,13 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN')"
-        )
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'name' => 'partial',
     'imageUrl' => 'partial',
-    'biography' => 'partial'
+    'biography' => 'partial',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'name'])]
 class Author
@@ -167,6 +167,7 @@ class Author
     public function setName(array $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -178,6 +179,7 @@ class Author
     public function setImageUrl(?array $imageUrl): self
     {
         $this->imageUrl = $imageUrl;
+
         return $this;
     }
 
@@ -189,6 +191,7 @@ class Author
     public function setBiography(?array $biography): self
     {
         $this->biography = $biography;
+
         return $this;
     }
 
@@ -200,6 +203,7 @@ class Author
     public function setTwitter(?array $twitter): self
     {
         $this->twitter = $twitter;
+
         return $this;
     }
 
@@ -211,6 +215,7 @@ class Author
     public function setPixiv(?array $pixiv): self
     {
         $this->pixiv = $pixiv;
+
         return $this;
     }
 
@@ -222,6 +227,7 @@ class Author
     public function setMelonBook(?array $melonBook): self
     {
         $this->melonBook = $melonBook;
+
         return $this;
     }
 
@@ -233,6 +239,7 @@ class Author
     public function setFanBox(?array $fanBox): self
     {
         $this->fanBox = $fanBox;
+
         return $this;
     }
 
@@ -244,6 +251,7 @@ class Author
     public function setBooth(?array $booth): self
     {
         $this->booth = $booth;
+
         return $this;
     }
 
@@ -255,6 +263,7 @@ class Author
     public function setNicoVideo(?array $nicoVideo): self
     {
         $this->nicoVideo = $nicoVideo;
+
         return $this;
     }
 
@@ -266,6 +275,7 @@ class Author
     public function setSkeb(?array $skeb): self
     {
         $this->skeb = $skeb;
+
         return $this;
     }
 
@@ -277,6 +287,7 @@ class Author
     public function setFantia(?array $fantia): self
     {
         $this->fantia = $fantia;
+
         return $this;
     }
 
@@ -288,6 +299,7 @@ class Author
     public function setTumblr(?array $tumblr): self
     {
         $this->tumblr = $tumblr;
+
         return $this;
     }
 
@@ -299,6 +311,7 @@ class Author
     public function setYoutube(?array $youtube): self
     {
         $this->youtube = $youtube;
+
         return $this;
     }
 
@@ -310,6 +323,7 @@ class Author
     public function setWeibo(?array $weibo): self
     {
         $this->weibo = $weibo;
+
         return $this;
     }
 
@@ -321,6 +335,7 @@ class Author
     public function setNaver(?array $naver): self
     {
         $this->naver = $naver;
+
         return $this;
     }
 
@@ -332,6 +347,7 @@ class Author
     public function setWebsite(?array $website): self
     {
         $this->website = $website;
+
         return $this;
     }
 
@@ -343,6 +359,7 @@ class Author
     public function setVersion(int $version): self
     {
         $this->version = $version;
+
         return $this;
     }
 
@@ -354,6 +371,7 @@ class Author
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -365,6 +383,7 @@ class Author
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -379,6 +398,7 @@ class Author
             $this->mangaAsAuthor->add($mangaAsAuthor);
             $mangaAsAuthor->addAuthor($this);
         }
+
         return $this;
     }
 
@@ -387,6 +407,7 @@ class Author
         if ($this->mangaAsAuthor->removeElement($mangaAsAuthor)) {
             $mangaAsAuthor->removeAuthor($this);
         }
+
         return $this;
     }
 
@@ -401,6 +422,7 @@ class Author
             $this->mangaAsArtist->add($mangaAsArtist);
             $mangaAsArtist->addArtist($this);
         }
+
         return $this;
     }
 
@@ -409,6 +431,7 @@ class Author
         if ($this->mangaAsArtist->removeElement($mangaAsArtist)) {
             $mangaAsArtist->removeArtist($this);
         }
+
         return $this;
     }
 
@@ -417,7 +440,7 @@ class Author
     public function updateTimestamps(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
-        if ($this->createdAt === null) {
+        if (null === $this->createdAt) {
             $this->createdAt = new \DateTimeImmutable();
         }
     }

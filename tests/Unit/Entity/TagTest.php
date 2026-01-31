@@ -53,10 +53,10 @@ class TagTest extends TestCase
     {
         $createdAt = new \DateTimeImmutable('2023-01-01');
         $updatedAt = new \DateTimeImmutable('2023-01-02');
-        
+
         $this->tag->setCreatedAt($createdAt);
         $this->tag->setUpdatedAt($updatedAt);
-        
+
         $this->assertEquals($createdAt, $this->tag->getCreatedAt());
         $this->assertEquals($updatedAt, $this->tag->getUpdatedAt());
     }
@@ -76,7 +76,7 @@ class TagTest extends TestCase
     public function testValidTagGroups(): void
     {
         $validGroups = ['content', 'format', 'genre', 'theme'];
-        
+
         foreach ($validGroups as $group) {
             $this->tag->setTagGroup($group);
             $this->assertEquals($group, $this->tag->getTagGroup());
@@ -88,7 +88,7 @@ class TagTest extends TestCase
         $name = [
             'en' => 'Action',
             'ja' => 'アクション',
-            'es' => 'Acción'
+            'es' => 'Acción',
         ];
         $this->tag->setName($name);
         $this->assertEquals($name, $this->tag->getName());
@@ -99,7 +99,7 @@ class TagTest extends TestCase
         $description = [
             'en' => 'High energy and conflict',
             'ja' => '高いエネルギーと対立',
-            'es' => 'Alta energía y conflicto'
+            'es' => 'Alta energía y conflicto',
         ];
         $this->tag->setDescription($description);
         $this->assertEquals($description, $this->tag->getDescription());

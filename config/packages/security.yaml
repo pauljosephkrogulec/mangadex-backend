@@ -34,6 +34,7 @@ security:
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/refresh, roles: PUBLIC_ACCESS }
+        - { path: ^/api/docs, roles: PUBLIC_ACCESS }
         - { path: ^/api/manga/.*/follow, roles: ROLE_USER }
         - { path: ^/api/manga/.*/unfollow, roles: ROLE_USER }
         - { path: ^/api, roles: PUBLIC_ACCESS }
