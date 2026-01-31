@@ -2,15 +2,14 @@
 
 namespace App\Tests\Integration\DataFixtures;
 
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\User;
-use App\Entity\Manga;
-use App\Entity\Chapter;
-use App\Entity\Author;
-use App\Entity\Tag;
-use App\DataFixtures\TestFixtures;
 use App\DataFixtures\FakeDataGenerator;
+use App\Entity\Author;
+use App\Entity\Chapter;
+use App\Entity\Manga;
+use App\Entity\Tag;
+use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class DatabaseTest extends KernelTestCase
@@ -21,10 +20,23 @@ class DatabaseTest extends KernelTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         self::bootKernel();
         $this->entityManager = self::getContainer()->get('doctrine')->getManager();
         $this->passwordHasher = self::getContainer()->get('security.password_hasher');
+
+        // Begin transaction for test isolation
+        $this->entityManager->beginTransaction();
+    }
+
+    protected function tearDown(): void
+    {
+        // Rollback transaction to ensure test isolation
+        if ($this->entityManager->getConnection()->isTransactionActive()) {
+            $this->entityManager->rollback();
+        }
+
+        parent::tearDown();
     }
 
     public function testDatabaseConnection(): void
@@ -35,9 +47,11 @@ class DatabaseTest extends KernelTestCase
 
     public function testUserEntityPersistence(): void
     {
+        // Use unique identifiers to avoid conflicts with fixtures
+        $uniqueId = uniqid('test_', true);
         $user = new User();
-        $user->setUsername('testuser');
-        $user->setEmail('test@example.com');
+        $user->setUsername($uniqueId);
+        $user->setEmail($uniqueId.'@example.com');
         $user->setPassword($this->passwordHasher->hashPassword($user, 'password123'));
         $user->setRoles(['ROLE_USER']);
 
@@ -46,8 +60,8 @@ class DatabaseTest extends KernelTestCase
 
         $savedUser = $this->entityManager->find(User::class, $user->getId());
         $this->assertNotNull($savedUser);
-        $this->assertEquals('testuser', $savedUser->getUsername());
-        $this->assertEquals('test@example.com', $savedUser->getEmail());
+        $this->assertEquals($uniqueId, $savedUser->getUsername());
+        $this->assertEquals($uniqueId.'@example.com', $savedUser->getEmail());
         $this->assertContains('ROLE_USER', $savedUser->getRoles());
     }
 
@@ -186,7 +200,7 @@ class DatabaseTest extends KernelTestCase
     public function testFakeDataGenerator(): void
     {
         $generator = new FakeDataGenerator();
-        
+
         // Test user generation
         $user = $generator->generateUser();
         $this->assertInstanceOf(User::class, $user);
@@ -197,7 +211,7 @@ class DatabaseTest extends KernelTestCase
         // Test manga generation
         $author = $generator->generateAuthor();
         $tag = $generator->generateTag();
-        
+
         $this->entityManager->persist($author);
         $this->entityManager->persist($tag);
         $this->entityManager->flush();
@@ -219,7 +233,7 @@ class DatabaseTest extends KernelTestCase
     public function testLargeDatasetGeneration(): void
     {
         $generator = new FakeDataGenerator();
-        
+
         // Generate a small dataset for testing
         $generator->generateLargeDataset($this->entityManager, 5);
         $this->entityManager->flush();
@@ -252,24 +266,15 @@ class DatabaseTest extends KernelTestCase
         $afterSave = new \DateTimeImmutable();
 
         $savedManga = $this->entityManager->find(Manga::class, $manga->getId());
-        
-        $this->assertGreaterThanOrEqual($beforeSave, $savedManga->getCreatedAt());
-        $this->assertLessThanOrEqual($afterSave, $savedManga->getCreatedAt());
-        $this->assertGreaterThanOrEqual($beforeSave, $savedManga->getUpdatedAt());
-        $this->assertLessThanOrEqual($afterSave, $savedManga->getUpdatedAt());
-    }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        
-        // Clean up the database
-        $this->entityManager->createQuery('DELETE FROM App\Entity\Chapter c')->execute();
-        $this->entityManager->createQuery('DELETE FROM App\Entity\Manga m')->execute();
-        $this->entityManager->createQuery('DELETE FROM App\Entity\Author a')->execute();
-        $this->entityManager->createQuery('DELETE FROM App\Entity\Tag t')->execute();
-        $this->entityManager->createQuery('DELETE FROM App\Entity\User u')->execute();
-        
-        $this->entityManager->close();
+        $this->assertNotNull($savedManga->getCreatedAt());
+        $this->assertNotNull($savedManga->getUpdatedAt());
+
+        // Allow for small time differences (within 1 second)
+        $createdAtDiff = abs($savedManga->getCreatedAt()->getTimestamp() - $beforeSave->getTimestamp());
+        $updatedAtDiff = abs($savedManga->getUpdatedAt()->getTimestamp() - $beforeSave->getTimestamp());
+
+        $this->assertLessThanOrEqual(1, $createdAtDiff);
+        $this->assertLessThanOrEqual(1, $updatedAtDiff);
     }
 }

@@ -2,16 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -43,13 +43,13 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN') or object.getUploader() == user"
-        )
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'manga.id' => 'exact',
     'uploader.id' => 'exact',
-    'volume' => 'partial'
+    'volume' => 'partial',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'volume'])]
 class CoverArt
@@ -126,6 +126,7 @@ class CoverArt
     public function setVolume(?string $volume): self
     {
         $this->volume = $volume;
+
         return $this;
     }
 
@@ -137,6 +138,7 @@ class CoverArt
     public function setFileName(string $fileName): self
     {
         $this->fileName = $fileName;
+
         return $this;
     }
 
@@ -148,6 +150,7 @@ class CoverArt
     public function setLocale(?string $locale): self
     {
         $this->locale = $locale;
+
         return $this;
     }
 
@@ -159,6 +162,7 @@ class CoverArt
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -170,6 +174,7 @@ class CoverArt
     public function setVersion(int $version): self
     {
         $this->version = $version;
+
         return $this;
     }
 
@@ -181,6 +186,7 @@ class CoverArt
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -192,6 +198,7 @@ class CoverArt
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -203,6 +210,7 @@ class CoverArt
     public function setManga(Manga $manga): self
     {
         $this->manga = $manga;
+
         return $this;
     }
 
@@ -214,6 +222,7 @@ class CoverArt
     public function setUploader(User $uploader): self
     {
         $this->uploader = $uploader;
+
         return $this;
     }
 
@@ -228,6 +237,7 @@ class CoverArt
             $this->reports->add($report);
             $report->setObjectId($this->id);
         }
+
         return $this;
     }
 
@@ -237,6 +247,7 @@ class CoverArt
             // Don't set objectId to null as it's a required field in Report entity
             // The report should be handled differently if needed
         }
+
         return $this;
     }
 
@@ -245,7 +256,7 @@ class CoverArt
     public function updateTimestamps(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
-        if ($this->createdAt === null) {
+        if (null === $this->createdAt) {
             $this->createdAt = new \DateTimeImmutable();
         }
     }

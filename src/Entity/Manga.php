@@ -2,18 +2,18 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
-use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -47,7 +47,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN')"
-        )
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
@@ -59,7 +59,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     'year' => 'exact',
     'authors.id' => 'exact',
     'artists.id' => 'exact',
-    'tags.id' => 'exact'
+    'tags.id' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'title', 'year'])]
 #[ApiFilter(RangeFilter::class, properties: ['year'])]
@@ -231,6 +231,7 @@ class Manga
     public function setTitle(array $title): self
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -242,6 +243,7 @@ class Manga
     public function setAltTitles(array $altTitles): self
     {
         $this->altTitles = $altTitles;
+
         return $this;
     }
 
@@ -253,6 +255,7 @@ class Manga
     public function setDescription(array $description): self
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -264,6 +267,7 @@ class Manga
     public function setIsLocked(bool $isLocked): self
     {
         $this->isLocked = $isLocked;
+
         return $this;
     }
 
@@ -275,6 +279,7 @@ class Manga
     public function setLinks(?array $links): self
     {
         $this->links = $links;
+
         return $this;
     }
 
@@ -286,6 +291,7 @@ class Manga
     public function setOfficialLinks(?array $officialLinks): self
     {
         $this->officialLinks = $officialLinks;
+
         return $this;
     }
 
@@ -297,6 +303,7 @@ class Manga
     public function setOriginalLanguage(string $originalLanguage): self
     {
         $this->originalLanguage = $originalLanguage;
+
         return $this;
     }
 
@@ -308,6 +315,7 @@ class Manga
     public function setLastVolume(?string $lastVolume): self
     {
         $this->lastVolume = $lastVolume;
+
         return $this;
     }
 
@@ -319,6 +327,7 @@ class Manga
     public function setLastChapter(?string $lastChapter): self
     {
         $this->lastChapter = $lastChapter;
+
         return $this;
     }
 
@@ -330,6 +339,7 @@ class Manga
     public function setPublicationDemographic(?string $publicationDemographic): self
     {
         $this->publicationDemographic = $publicationDemographic;
+
         return $this;
     }
 
@@ -341,6 +351,7 @@ class Manga
     public function setStatus(string $status): self
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -352,6 +363,7 @@ class Manga
     public function setYear(?int $year): self
     {
         $this->year = $year;
+
         return $this;
     }
 
@@ -363,6 +375,7 @@ class Manga
     public function setContentRating(string $contentRating): self
     {
         $this->contentRating = $contentRating;
+
         return $this;
     }
 
@@ -374,6 +387,7 @@ class Manga
     public function setChapterNumbersResetOnNewVolume(bool $chapterNumbersResetOnNewVolume): self
     {
         $this->chapterNumbersResetOnNewVolume = $chapterNumbersResetOnNewVolume;
+
         return $this;
     }
 
@@ -385,6 +399,7 @@ class Manga
     public function setAvailableTranslatedLanguages(array $availableTranslatedLanguages): self
     {
         $this->availableTranslatedLanguages = $availableTranslatedLanguages;
+
         return $this;
     }
 
@@ -396,6 +411,7 @@ class Manga
     public function setLatestUploadedChapter(?string $latestUploadedChapter): self
     {
         $this->latestUploadedChapter = $latestUploadedChapter;
+
         return $this;
     }
 
@@ -407,6 +423,7 @@ class Manga
     public function setState(string $state): self
     {
         $this->state = $state;
+
         return $this;
     }
 
@@ -418,6 +435,7 @@ class Manga
     public function setVersion(int $version): self
     {
         $this->version = $version;
+
         return $this;
     }
 
@@ -429,6 +447,7 @@ class Manga
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -440,6 +459,7 @@ class Manga
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -453,12 +473,14 @@ class Manga
         if (!$this->authors->contains($author)) {
             $this->authors->add($author);
         }
+
         return $this;
     }
 
     public function removeAuthor(Author $author): self
     {
         $this->authors->removeElement($author);
+
         return $this;
     }
 
@@ -472,12 +494,14 @@ class Manga
         if (!$this->artists->contains($artist)) {
             $this->artists->add($artist);
         }
+
         return $this;
     }
 
     public function removeArtist(Author $artist): self
     {
         $this->artists->removeElement($artist);
+
         return $this;
     }
 
@@ -491,12 +515,14 @@ class Manga
         if (!$this->tags->contains($tag)) {
             $this->tags->add($tag);
         }
+
         return $this;
     }
 
     public function removeTag(Tag $tag): self
     {
         $this->tags->removeElement($tag);
+
         return $this;
     }
 
@@ -511,6 +537,7 @@ class Manga
             $this->chapters->add($chapter);
             $chapter->setManga($this);
         }
+
         return $this;
     }
 
@@ -521,6 +548,7 @@ class Manga
                 $chapter->setManga(null);
             }
         }
+
         return $this;
     }
 
@@ -535,6 +563,7 @@ class Manga
             $this->coverArts->add($coverArt);
             $coverArt->setManga($this);
         }
+
         return $this;
     }
 
@@ -545,6 +574,7 @@ class Manga
                 $coverArt->setManga(null);
             }
         }
+
         return $this;
     }
 
@@ -559,6 +589,7 @@ class Manga
             $this->relations->add($relation);
             $relation->setManga($this);
         }
+
         return $this;
     }
 
@@ -569,6 +600,7 @@ class Manga
                 $relation->setManga(null);
             }
         }
+
         return $this;
     }
 
@@ -583,6 +615,7 @@ class Manga
             $this->relatedManga->add($relatedManga);
             $relatedManga->setSourceManga($this);
         }
+
         return $this;
     }
 
@@ -593,6 +626,7 @@ class Manga
                 $relatedManga->setSourceManga(null);
             }
         }
+
         return $this;
     }
 
@@ -607,6 +641,7 @@ class Manga
             $this->recommendations->add($recommendation);
             $recommendation->setManga($this);
         }
+
         return $this;
     }
 
@@ -617,6 +652,7 @@ class Manga
                 $recommendation->setManga(null);
             }
         }
+
         return $this;
     }
 
@@ -631,6 +667,7 @@ class Manga
             $this->customLists->add($customList);
             $customList->addManga($this);
         }
+
         return $this;
     }
 
@@ -639,6 +676,7 @@ class Manga
         if ($this->customLists->removeElement($customList)) {
             $customList->removeManga($this);
         }
+
         return $this;
     }
 
@@ -653,6 +691,7 @@ class Manga
             $this->followers->add($follower);
             $follower->addFollowedManga($this);
         }
+
         return $this;
     }
 
@@ -661,6 +700,7 @@ class Manga
         if ($this->followers->removeElement($follower)) {
             $follower->removeFollowedManga($this);
         }
+
         return $this;
     }
 
@@ -668,6 +708,7 @@ class Manga
     public function getMainCoverArtFilename(): ?string
     {
         $mainCoverArt = $this->coverArts->first();
+
         return $mainCoverArt ? $mainCoverArt->getFileName() : null;
     }
 
@@ -676,7 +717,7 @@ class Manga
     public function updateTimestamps(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
-        if ($this->createdAt === null) {
+        if (null === $this->createdAt) {
             $this->createdAt = new \DateTimeImmutable();
         }
     }

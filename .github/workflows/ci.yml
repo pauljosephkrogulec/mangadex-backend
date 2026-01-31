@@ -1,0 +1,113 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: mangadex_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+        extensions: intl, pdo_pgsql, zip
+        coverage: xdebug
+
+    - name: Cache Composer dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.composer/cache
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
+    - name: Install Composer dependencies
+      run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+    - name: Wait for PostgreSQL
+      run: |
+        timeout 60 bash -c 'until pg_isready -h localhost -p 5432; do sleep 1; done'
+
+    - name: Create test database
+      run: |
+        PGPASSWORD=password psql -h localhost -U postgres -c "CREATE DATABASE mangadex_test;" || true
+        PGPASSWORD=password psql -h localhost -U postgres -d mangadex_test -c "GRANT ALL PRIVILEGES ON DATABASE mangadex_test TO postgres;" || true
+
+    - name: Setup environment
+      run: |
+        cp .env .env.test
+        echo "DATABASE_URL=postgresql://postgres:password@localhost:5432/mangadex_test?serverVersion=16&charset=utf8" >> .env.test
+        echo "APP_ENV=test" >> .env.test
+        echo "DEFAULT_URI=http://localhost:8080" >> .env.test
+
+    - name: Run linter
+      run: |
+        vendor/bin/php-cs-fixer fix --dry-run --diff --verbose
+
+    - name: Validate composer.json
+      run: composer validate --strict
+
+    - name: Run PHPStan (static analysis)
+      run: |
+        if [ -f phpstan.dist.neon ]; then
+          vendor/bin/phpstan analyse
+        fi
+
+    - name: Create database schema
+      run: |
+        php bin/console doctrine:schema:create --env=test
+        php bin/console doctrine:schema:validate --env=test
+
+    - name: Load fixtures
+      run: |
+        php bin/console doctrine:fixtures:load --env=test --no-interaction
+
+    - name: Run PHPUnit tests
+      run: |
+        vendor/bin/phpunit --configuration phpunit.xml.dist --log-junit test-results.xml --coverage-clover coverage.xml
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: backend-test-results
+        path: test-results.xml
+
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: backend-coverage
+        path: coverage.xml
+
+    - name: Run integration tests specifically
+      run: |
+        vendor/bin/phpunit tests/Integration --log-junit integration-test-results.xml
+
+    - name: Upload integration test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: backend-integration-test-results
+        path: integration-test-results.xml

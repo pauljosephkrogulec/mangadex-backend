@@ -2,16 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -41,13 +41,13 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN')"
-        )
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'manga.id' => 'exact',
     'targetManga.id' => 'exact',
-    'relation' => 'exact'
+    'relation' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 class MangaRelation
@@ -66,7 +66,7 @@ class MangaRelation
         'monochrome', 'main_story', 'adapted_from', 'based_on', 'prequel',
         'side_story', 'doujinshi', 'same_franchise', 'shared_universe',
         'sequel', 'spin_off', 'alternate_story', 'alternate_version',
-        'preserialization', 'colored', 'serialization'
+        'preserialization', 'colored', 'serialization',
     ])]
     private string $relation;
 
@@ -111,6 +111,7 @@ class MangaRelation
     public function setRelation(string $relation): self
     {
         $this->relation = $relation;
+
         return $this;
     }
 
@@ -122,6 +123,7 @@ class MangaRelation
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -133,6 +135,7 @@ class MangaRelation
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -144,6 +147,7 @@ class MangaRelation
     public function setManga(Manga $manga): self
     {
         $this->manga = $manga;
+
         return $this;
     }
 
@@ -155,6 +159,7 @@ class MangaRelation
     public function setTargetManga(Manga $targetManga): self
     {
         $this->targetManga = $targetManga;
+
         return $this;
     }
 
@@ -166,6 +171,7 @@ class MangaRelation
     public function setSourceManga(Manga $sourceManga): self
     {
         $this->sourceManga = $sourceManga;
+
         return $this;
     }
 
@@ -174,7 +180,7 @@ class MangaRelation
     public function updateTimestamps(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
-        if ($this->createdAt === null) {
+        if (null === $this->createdAt) {
             $this->createdAt = new \DateTimeImmutable();
         }
     }

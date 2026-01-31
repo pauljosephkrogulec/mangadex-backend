@@ -2,16 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -43,13 +43,13 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN') or object.getOwner() == user"
-        )
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'name' => 'partial',
     'owner.id' => 'exact',
-    'visibility' => 'exact'
+    'visibility' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'name'])]
 class CustomList
@@ -120,6 +120,7 @@ class CustomList
     public function setName(string $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -131,6 +132,7 @@ class CustomList
     public function setVisibility(string $visibility): self
     {
         $this->visibility = $visibility;
+
         return $this;
     }
 
@@ -142,6 +144,7 @@ class CustomList
     public function setVersion(int $version): self
     {
         $this->version = $version;
+
         return $this;
     }
 
@@ -153,6 +156,7 @@ class CustomList
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -164,6 +168,7 @@ class CustomList
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -175,6 +180,7 @@ class CustomList
     public function setOwner(User $owner): self
     {
         $this->owner = $owner;
+
         return $this;
     }
 
@@ -189,6 +195,7 @@ class CustomList
             $this->manga->add($manga);
             $manga->addCustomList($this);
         }
+
         return $this;
     }
 
@@ -197,6 +204,7 @@ class CustomList
         if ($this->manga->removeElement($manga)) {
             $manga->removeCustomList($this);
         }
+
         return $this;
     }
 
@@ -211,6 +219,7 @@ class CustomList
             $this->followers->add($follower);
             $follower->addFollowedList($this);
         }
+
         return $this;
     }
 
@@ -219,6 +228,7 @@ class CustomList
         if ($this->followers->removeElement($follower)) {
             $follower->removeFollowedList($this);
         }
+
         return $this;
     }
 
@@ -227,7 +237,7 @@ class CustomList
     public function updateTimestamps(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
-        if ($this->createdAt === null) {
+        if (null === $this->createdAt) {
             $this->createdAt = new \DateTimeImmutable();
         }
     }

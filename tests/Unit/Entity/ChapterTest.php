@@ -78,10 +78,10 @@ class ChapterTest extends TestCase
     {
         $createdAt = new \DateTimeImmutable('2023-01-01');
         $updatedAt = new \DateTimeImmutable('2023-01-02');
-        
+
         $this->chapter->setCreatedAt($createdAt);
         $this->chapter->setUpdatedAt($updatedAt);
-        
+
         $this->assertEquals($createdAt, $this->chapter->getCreatedAt());
         $this->assertEquals($updatedAt, $this->chapter->getUpdatedAt());
     }
@@ -110,7 +110,7 @@ class ChapterTest extends TestCase
     {
         $manga = new Manga();
         $manga->setTitle(['en' => 'Test Manga']);
-        
+
         $this->chapter->setManga($manga);
         $this->assertEquals($manga, $this->chapter->getManga());
     }
@@ -119,7 +119,7 @@ class ChapterTest extends TestCase
     {
         $user = new User();
         $user->setUsername('testuser');
-        
+
         $this->chapter->setUploader($user);
         $this->assertEquals($user, $this->chapter->getUploader());
     }

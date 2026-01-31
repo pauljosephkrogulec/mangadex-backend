@@ -67,10 +67,10 @@ class UserTest extends TestCase
     {
         $createdAt = new \DateTimeImmutable('2023-01-01');
         $updatedAt = new \DateTimeImmutable('2023-01-02');
-        
+
         $this->user->setCreatedAt($createdAt);
         $this->user->setUpdatedAt($updatedAt);
-        
+
         $this->assertEquals($createdAt, $this->user->getCreatedAt());
         $this->assertEquals($updatedAt, $this->user->getUpdatedAt());
     }

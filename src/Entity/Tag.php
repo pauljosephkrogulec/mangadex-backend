@@ -2,16 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -42,12 +42,12 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN')"
-        )
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'name' => 'partial',
-    'group' => 'exact'
+    'group' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'name'])]
 class Tag
@@ -115,6 +115,7 @@ class Tag
     public function setName(array $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -126,6 +127,7 @@ class Tag
     public function setDescription(array $description): self
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -137,6 +139,7 @@ class Tag
     public function setTagGroup(string $tagGroup): self
     {
         $this->tagGroup = $tagGroup;
+
         return $this;
     }
 
@@ -148,6 +151,7 @@ class Tag
     public function setVersion(int $version): self
     {
         $this->version = $version;
+
         return $this;
     }
 
@@ -159,6 +163,7 @@ class Tag
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -170,6 +175,7 @@ class Tag
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -184,6 +190,7 @@ class Tag
             $this->manga->add($manga);
             $manga->addTag($this);
         }
+
         return $this;
     }
 
@@ -192,6 +199,7 @@ class Tag
         if ($this->manga->removeElement($manga)) {
             $manga->removeTag($this);
         }
+
         return $this;
     }
 
@@ -206,6 +214,7 @@ class Tag
             $this->reports->add($report);
             $report->setObjectId($this->id);
         }
+
         return $this;
     }
 
@@ -216,6 +225,7 @@ class Tag
                 $report->setObjectId(null);
             }
         }
+
         return $this;
     }
 
@@ -224,7 +234,7 @@ class Tag
     public function updateTimestamps(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
-        if ($this->createdAt === null) {
+        if (null === $this->createdAt) {
             $this->createdAt = new \DateTimeImmutable();
         }
     }

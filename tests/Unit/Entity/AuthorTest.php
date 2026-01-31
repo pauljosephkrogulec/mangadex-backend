@@ -144,10 +144,10 @@ class AuthorTest extends TestCase
     {
         $createdAt = new \DateTimeImmutable('2023-01-01');
         $updatedAt = new \DateTimeImmutable('2023-01-02');
-        
+
         $this->author->setCreatedAt($createdAt);
         $this->author->setUpdatedAt($updatedAt);
-        
+
         $this->assertEquals($createdAt, $this->author->getCreatedAt());
         $this->assertEquals($updatedAt, $this->author->getUpdatedAt());
     }
@@ -196,7 +196,7 @@ class AuthorTest extends TestCase
         $name = [
             'en' => 'John Doe',
             'ja' => 'ジョン・ドウ',
-            'es' => 'Juan Pérez'
+            'es' => 'Juan Pérez',
         ];
         $this->author->setName($name);
         $this->assertEquals($name, $this->author->getName());
@@ -207,7 +207,7 @@ class AuthorTest extends TestCase
         $biography = [
             'en' => 'An accomplished author',
             'ja' => ' accomplishedな著者',
-            'es' => 'Un autor consumado'
+            'es' => 'Un autor consumado',
         ];
         $this->author->setBiography($biography);
         $this->assertEquals($biography, $this->author->getBiography());

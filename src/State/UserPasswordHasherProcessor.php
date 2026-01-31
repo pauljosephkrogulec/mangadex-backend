@@ -2,9 +2,9 @@
 
 namespace App\State;
 
-use App\Entity\User;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Entity\User;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserPasswordHasherProcessor implements ProcessorInterface
@@ -14,7 +14,7 @@ class UserPasswordHasherProcessor implements ProcessorInterface
 
     public function __construct(
         ProcessorInterface $decorated,
-        UserPasswordHasherInterface $passwordHasher
+        UserPasswordHasherInterface $passwordHasher,
     ) {
         $this->decorated = $decorated;
         $this->passwordHasher = $passwordHasher;
